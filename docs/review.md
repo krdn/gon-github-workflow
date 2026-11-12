@@ -1,0 +1,39 @@
+# 최초 조합 검토
+
+2026-11-12. 구현: Codex. 독립 리뷰 실제 반환 모델: `claude-opus-5-5`, effort high.
+원본별 채택/제외는 [조합 분석](analysis.md)에 기록했다. 초기 버전 lock과 이 문서의 해시는 upstream-review.json으로 연결한다.
+
+## 원본 영향
+
+- CCPM: PRD/epic/issue 추적을 채택. 별도 `.claude/epics` 할 일 목록은 만들지 않는다.
+- Spec Kit: 명세·검증·버그 단계 분리를 채택. 기존 도구의 전체 커맨드 설치는 제외한다.
+- GSD Core: 새 저장소 경로와 STATE/CONTEXT의 지속적 맥락 개념을 채택. 문서 경로를 통합한다.
+- gh-aw: AI 추론 작업과 결정적 CI/CD 분리를 채택. 원격 엔진은 인증/비용 조건이 있는 선택 항목이다.
+- Claude Code Action: 이슈/PR 상호작용을 선택적 엔진 경로로 유지. gh-aw와 중복 트리거하지 않는다.
+
+## 독립 리뷰 처리
+
+- 수용: orphan 업데이트 브랜치에서 PR 생성 재개. 원격 lock 내용이 다르면 차단한다.
+- 수용: 미검토 lock이 CI/start를 통과하지 못하도록 lock·검토 문서 해시를 연결한다.
+- 수용: 업데이트 후보는 한 번에 하나만 열어 중복 PR 누적을 막는다.
+- 수용: 최신 정식 릴리스는 GitHub latest API를 사용한다. 404만 기본 브랜치로 대체한다.
+- 수용: README는 커밋에 고정해 가져오고 별도 문서 compare 근거를 남긴다.
+- 수용: 전역 지침은 경계 블록만 갱신하며 이전 내용을 백업한다. UTF-8·임시 파일 교체를 사용한다.
+- 수용: UTC Z 표기 지원, 입력 타입 오류 처리, 직접 실행 테스트 누락을 보완한다.
+- 조건부 지적 해소: `.local/`와 `__pycache__/`는 이미 ignore 대상이다. 설치 후 wrapper 연속 실행으로 확인한다.
+- 기각: GITHUB_TOKEN 생성 PR의 CI가 전혀 생성되지 않는다는 주장은 [현재 공식 정책](https://docs.github.com/en/actions/concepts/security/github_token)과 다르다. opened/synchronize/reopened는 승인 대기 실행을 생성한다. 승인 대기는 통과가 아니다.
+- 의도적 제약: 최신 문서 변경·원본 갱신 시 시작을 차단한다. 빈번한 upstream 변경의 운영 비용을 운영 문서에 명시했다.
+- 의도적 제약: 심볼릭 링크 대상과 템플릿 은퇴는 수동 마이그레이션으로 처리한다. handoff는 명시적 게시 명령이며 commit/push 확인은 실행 절차로 남긴다.
+
+20개 테스트 통과. 외부 리뷰 후 수정분 검토와 실제 GitHub CI·설치 검증 근거는 이슈/PR에 이어 기록한다.
+
+## 수정분 재검토
+
+동일 `claude-opus-5-5` high가 수정분을 한 번 더 검토했다. 새로 지적한 후보 해시 문제를 수정했다.
+README 본문과 무관한 커밋이 생겨도 의미가 같은 후보는 같은 브랜치로 재개한다. 회귀 테스트를 추가했다.
+branch 모드는 동일 SHA로 README를 조회해 두 번 조회 사이의 시점 차이를 없앴다.
+미검토 자동 보고서를 record-review의 근거로 사용하는 경로도 거부한다.
+이전 END_MARKER 없는 설치 버전은 실제 배포한 적이 없으므로 마이그레이션 대상이 없다.
+검토 파일 누락은 CLI 최상위 OSError/KeyError 처리로 실패 종료한다. CI에는 검토 파일·문서를 함께 커밋한다.
+checkout SHA는 GitHub API의 actions/checkout v4 commit 조회 결과와 일치한다.
+검토 기록은 사람·모델 판단의 추적 장치이며 그 판단의 진실성을 자동 증명하지 않는다.

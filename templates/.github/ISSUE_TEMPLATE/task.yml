@@ -1,0 +1,23 @@
+name: 작업·버그
+description: 목표와 검증 가능한 완료 조건
+body:
+  - type: textarea
+    id: objective
+    attributes:
+      label: 목표와 범위
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: 완료 조건과 검증 방법
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: 선행 작업·재현·관련 명세
+  - type: textarea
+    id: handoff
+    attributes:
+      label: 결정·실패한 시도·다음 행동
