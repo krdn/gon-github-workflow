@@ -9,14 +9,15 @@
 변경 후보가 있으면 중앙 저장소에서 `upgrade`, 영향 검토, 테스트, 독립 리뷰 기록(record-review), PR CI·merge를 먼저 완료한다.
 인터넷 오류는 최신 확인 성공이 아니다. 오류를 해결한 뒤 다시 실행한다.
 
-`docs/start-context.json`에 목표, 최신 공식 출처와 확인 내용, 기술 선택, 제약을 기록한다.
-`status`를 `reviewed`로 바꾸고 `checked_at`을 실제 확인 시각으로 기록한다.
-`gon-workflow ready .`는 24시간 이내의 도구 확인과 조사 기록을 검사한다.
-이 검사는 출처 내용의 진실성이나 실제 기술 호환성까지 증명하지 않는다.
+start가 Git 초기화, 원격 저장소, 첫 이슈·Milestone·Project 연결, 구성 커밋·푸시를 수행한다.
+새 저장소는 기본 비공개이며 `--visibility public`을 지정할 수 있다. 기존 공개 범위는 보존한다.
+`gon-workflow ready .`로 원격 커밋과 연결을 확인한다. URL은 `.github/project-setup.json`에 있다.
 
-GitHub 저장소를 만들거나 기존 remote를 확인한 뒤 첫 목표를 이슈로 기록한다.
-큰 작업은 상위 이슈와 하위 이슈, 의존 관계를 사용한다. Projects는 상태 보기다.
-원격 저장소 생성은 기본 비공개이며 사용자가 지정한 소유자·공개 범위를 우선한다.
+AI 조사·계획·구현은 구성 완료 후 이 프로젝트에서 별도로 요청한다.
+그때 `docs/start-context.json`에 목표, 공식 출처와 확인 내용, 기술 선택, 실제 checked_at을 기록한다.
+status를 reviewed로 바꾸고 `gon-workflow implementation-ready .`로 24시간 이내 조사 기록을 확인한다.
+이 검사는 출처의 진실성·기술 호환성·AI 실행 성공을 증명하지 않는다.
+첫 이슈의 목표를 구체화하고, 큰 작업은 하위 이슈와 의존 관계를 사용한다.
 
 ## 작업
 

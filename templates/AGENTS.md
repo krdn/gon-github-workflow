@@ -3,8 +3,9 @@
 한국어로 응답한다. [워크플로](docs/WORKFLOW.md)와 [인수인계](docs/STATE.md)를 먼저 읽는다.
 
 - 신규 프로젝트의 첫 구현 전 `gon-workflow start . --repo {{REPO}}`를 실행한다.
-- 관련 기술·API·운영 조건을 최신 공식 자료로 확인해 `docs/start-context.json`을 작성한다.
-- `gon-workflow ready .`가 통과하기 전 첫 구현을 시작하지 않는다.
+- `gon-workflow ready .`로 GitHub 구성 완료를 확인한다.
+- AI 조사·계획·구현은 구성 완료 후 이 프로젝트에서 별도 요청을 받아 실행한다.
+- 그때 공식 자료를 확인해 `docs/start-context.json`을 작성하고 `gon-workflow implementation-ready .` 통과 후 구현한다.
 - 재개 시 원격 이슈·PR·CI를 조회하고 로컬 요약과 대조한다. 프로젝트 재개를 신규 초기화하지 않는다.
 - 작업·완료 조건은 GitHub Issues가 기준이다. 명세·결정은 저장소 문서, 변경·검증은 PR/Actions에 남긴다.
 - 수정 범위를 지키고 실제 검사 결과와 미검증을 구분한다. 기존 테스트·패키지 관리자를 유지한다.

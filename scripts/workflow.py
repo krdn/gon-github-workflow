@@ -4,6 +4,7 @@ import argparse
 import base64
 import hashlib
 import json
+import os
 import re
 import subprocess
 import sys
@@ -42,8 +43,12 @@ def write_json(path, value):
     temporary.replace(path)
 
 
-def run(*args):
-    result = subprocess.run(args, text=True, capture_output=True, timeout=120)
+def run(*args, input_data=None):
+    env = dict(os.environ)
+    if args[0] == 'git':
+        env['GIT_TERMINAL_PROMPT'] = '0'
+    result = subprocess.run(args, text=True, capture_output=True, timeout=120,
+                            input=input_data, env=env)
     if result.returncode:
         raise ValueError(f'명령 실패 ({args[0]}): {result.stderr.strip()}')
     return result.stdout.strip()
@@ -151,22 +156,33 @@ def apply_templates(target, repo, lock, source=ROOT):
     if previous.get('repo', repo) != repo:
         raise ValueError('기존 적용 저장소와 요청한 저장소가 다릅니다.')
     planned = {}
+    seed_templates = {'.github/dependabot.yml'}
+    seeds = set(previous.get('seed_files', [])) | (set(previous['files']) & seed_templates)
     for template in sorted((source / 'templates').rglob('*')):
         if template.is_file():
             rel = template.relative_to(source / 'templates').as_posix()
             data = template.read_text(encoding='utf-8').replace('{{REPO}}', repo).encode()
             path = safe_path(target, rel)
+            if rel in seed_templates:
+                if not path.exists():
+                    planned[rel] = data
+                    seeds.add(rel)
+                continue
             if path.exists() and path.read_bytes() != data:
                 if previous['files'].get(rel) != digest(path.read_bytes()):
                     raise ValueError(f'파일 충돌: {rel}. 기존 내용을 보존하고 수동 통합하세요.')
             planned[rel] = data
-    retired = set(previous['files']) - set(planned)
+    retired = set(previous['files']) - set(planned) - seed_templates
     if retired:
         raise ValueError(f'관리 파일 제거는 수동 마이그레이션이 필요합니다: {sorted(retired)}')
     defaults = {
+        'README.md': f'# {repo.split("/")[-1]}\n\nGitHub 개발 구성을 준비한 프로젝트입니다.\n\n'
+                     '[작업 규칙](docs/WORKFLOW.md) · [구성 연결](.github/project-setup.json)\n\n'
+                     'AI 조사·계획·구현은 이 프로젝트에서 별도로 요청합니다.\n',
+        '.gitignore': '.env\n.env.*\n.local/\n__pycache__/\n',
         'docs/STATE.md': '# 작업 인수인계\n\n기준: https://github.com/' + repo + '/issues\n\n'
                          '- 목표: 미작성\n- 확정 결정: 없음\n- 완료/미완료: 시작 준비\n'
-                         '- 실패한 시도: 없음\n- 검증 근거: 없음\n- 다음 행동: 시작 조사 완료\n',
+                         '- 실패한 시도: 없음\n- 검증 근거: 없음\n- 다음 행동: GitHub 구성 완료 후 이 프로젝트에서 AI 작업을 별도로 요청\n',
         'docs/start-context.json': json.dumps({
             'checked_at': now(), 'objective': '', 'sources': [],
             'decisions': '', 'status': 'pending_research',
@@ -176,17 +192,19 @@ def apply_templates(target, repo, lock, source=ROOT):
         path = safe_path(target, rel)
         if not path.exists():
             planned[rel] = content.encode()
+            seeds.add(rel)
     for rel in ('.github/upstreams.lock.json', '.github/start-check.json'):
         path = safe_path(target, rel)
         if path.exists() and not state_path.exists():
             raise ValueError(f'파일 충돌: {rel}')
-    managed = {rel: digest(data) for rel, data in planned.items() if rel not in defaults}
+    managed = {rel: digest(data) for rel, data in planned.items()
+               if rel not in defaults and rel not in seed_templates}
     for rel, data in planned.items():
         path = target / rel
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(data)
     write_json(target / '.github/upstreams.lock.json', lock)
-    write_json(state_path, {'schema': 1, 'repo': repo, 'files': managed})
+    write_json(state_path, {'schema': 1, 'repo': repo, 'files': managed, 'seed_files': sorted(seeds)})
 
 
 def refresh(root, apply=False):
@@ -219,7 +237,7 @@ def refresh(root, apply=False):
     return latest, changes
 
 
-def start(root, target, repo):
+def prepare_project(root, target, repo):
     latest, changes = refresh(root)
     if changes:
         raise ValueError('미반영 upstream: ' + ', '.join(changes) +
@@ -227,18 +245,22 @@ def start(root, target, repo):
     validate_review(root)
     latest = read_json(root / 'upstreams.lock.json')
     apply_templates(target, repo, latest, root)
-    write_json(target / '.github/start-check.json', {
+    gate_path = target / '.github/start-check.json'
+    previous = read_json(gate_path) if gate_path.exists() else {}
+    if previous.get('lock_sha256') == lock_hash(latest):
+        return
+    write_json(gate_path, {
         'checked_at': now(), 'status': 'upstreams_current',
         'lock_sha256': digest(json.dumps(latest, sort_keys=True).encode()),
         'domain_research': 'docs/start-context.json에서 별도 검증',
     })
-    print(f'적용 완료: {target}. 도메인 조사 후 ready로 시작 조건을 확인하세요.')
+    print(f'로컬 구성 파일 준비: {target}', flush=True)
 
 
-def ready(target):
+def implementation_ready(target):
     gate = read_json(target / '.github/start-check.json')
     context = read_json(target / 'docs/start-context.json')
-    for record in (gate, context):
+    for record in (context,):
         timestamp = record.get('checked_at')
         if not isinstance(timestamp, str):
             raise ValueError('확인 시각은 UTC ISO-8601 문자열이어야 합니다.')
@@ -247,7 +269,7 @@ def ready(target):
             raise ValueError('확인 시각에 UTC 시간대가 필요합니다.')
         age = (datetime.now(timezone.utc) - checked).total_seconds()
         if not 0 <= age <= 86400:
-            raise ValueError('시작 확인은 24시간 이내 기록이어야 합니다. start와 조사를 다시 실행하세요.')
+            raise ValueError('도메인 조사는 24시간 이내 기록이어야 합니다. 조사 기록을 갱신하세요.')
     lock = read_json(target / '.github/upstreams.lock.json')
     if gate['lock_sha256'] != digest(json.dumps(lock, sort_keys=True).encode()):
         raise ValueError('시작 확인 후 lock이 변경되었습니다.')
@@ -264,7 +286,19 @@ def ready(target):
         parsed = urlparse(source['url'])
         if parsed.scheme != 'https' or not parsed.hostname or not source['finding'].strip():
             raise ValueError('출처에는 HTTPS URL과 확인 내용이 필요합니다.')
-    print('시작 조건 통과: 최신 도구 확인 + 도메인 조사 기록. 구현 성공을 뜻하지 않습니다.')
+    print('AI 작업 준비 확인: 구성 시 도구 확인 + 최근 도메인 조사 기록. AI 실행을 뜻하지 않습니다.')
+
+
+def start(root, target, repo, visibility='private'):
+    from github_setup import configure, preflight
+    metadata = preflight(target, repo)
+    prepare_project(root, target, repo)
+    configure(target, repo, visibility, metadata)
+
+
+def ready(target):
+    from github_setup import verify
+    verify(target)
 
 
 def handoff(target, issue):
@@ -294,7 +328,11 @@ def main():
     p = commands.add_parser('start')
     p.add_argument('path', type=Path)
     p.add_argument('--repo', required=True)
+    p.add_argument('--visibility', choices=['private', 'public'], default='private',
+                   help='새 저장소 공개 범위. 기존 저장소는 변경하지 않습니다.')
     p = commands.add_parser('ready')
+    p.add_argument('path', type=Path)
+    p = commands.add_parser('implementation-ready')
     p.add_argument('path', type=Path)
     p = commands.add_parser('handoff')
     p.add_argument('path', type=Path)
@@ -312,9 +350,11 @@ def main():
             validate_review(ROOT)
         print('lock 검증 통과')
     elif args.command == 'start':
-        start(ROOT, args.path.absolute(), args.repo)
+        start(ROOT, args.path.absolute(), args.repo, args.visibility)
     elif args.command == 'ready':
         ready(args.path.resolve())
+    elif args.command == 'implementation-ready':
+        implementation_ready(args.path.resolve())
     elif args.command == 'handoff':
         handoff(args.path.resolve(), args.issue)
     return 0

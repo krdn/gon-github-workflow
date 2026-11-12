@@ -25,28 +25,25 @@ Orca·원격 호스트·별도 CODEX_HOME은 해당 환경에서 별도 설치�
 gon-workflow start /home/gon/dev/my-app --repo krdn/my-app
 ```
 
-매번 중앙 저장소 main을 fast-forward하고 원본 5개의 버전과 README를 조회한다.
-미반영 업데이트·통신 오류·사용자 파일 충돌이면 멈춘다. 캐시만으로 성공하지 않는다.
-생성한 `docs/start-context.json`에 실제 조사 결과를 채운다. 예:
-
-```json
-{
-  "checked_at": "실제 UTC ISO-8601 확인 시각",
-  "objective": "누구의 어떤 문제를 해결할지",
-  "sources": [{"url": "https://공식문서주소", "finding": "실제로 확인한 버전·제약"}],
-  "decisions": "선택한 기술과 이유, 미확정 사항",
-  "status": "reviewed"
-}
-```
+`start`는 최신 표준 확인 → 로컬 Git 초기화 → GitHub 저장소 → 첫 이슈·Milestone·Project → 구성 커밋·푸시까지 수행한다.
+새 저장소는 기본 비공개이며 `--visibility public`으로 공개를 지정한다. 기존 공개 범위는 바꾸지 않는다.
+원본 5개를 매번 조회하며, 미반영 업데이트·통신 오류·사용자 파일 충돌이면 중단한다.
 
 ```bash
 gon-workflow ready /home/gon/dev/my-app
 ```
 
-이후 Git 저장소·GitHub 비공개 저장소와 첫 이슈를 만들고 구현한다.
-`start`는 로컬 준비 명령이며 원격 저장소를 자동 생성하지 않는다.
-[생성된 작업 규칙](templates/docs/WORKFLOW.md), [GitHub 연결 절차](docs/operations.md)를 따른다.
-프로젝트가 커지면 이슈를 나누고, 중간 결과는 `docs/STATE.md`에 압축한다.
+`ready`는 원격 커밋과 GitHub 연결을 재조회한다. 조사 결과가 비어 있어도 구성 확인은 통과한다.
+구성 URL은 `.github/project-setup.json`에 저장한다. 같은 명령 재실행은 기존 자원을 재사용한다.
+구성 Actions는 관리 파일을 검사한다. 앱 테스트·배포는 제품의 기술 스택이 정해진 후 추가한다.
+
+**AI 조사·계획·구현은 구성 완료 후 해당 프로젝트에서 별도로 요청한다.**
+예: 프로젝트 폴더를 열고 “이 프로젝트의 목표는 …이다. 공식 자료를 조사하고 계획부터 세워줘”라고 요청한다.
+그때 `docs/start-context.json`에 실제 조사 결과를 기록하고 `gon-workflow implementation-ready <경로>`로 확인한다.
+조사 결과를 자동 생성하거나 AI 실행 성공으로 표시하지 않는다.
+
+[작업 규칙](templates/docs/WORKFLOW.md) · [실패 복구와 기존 저장소 적용](docs/operations.md)
+프로젝트가 커지면 이슈를 나누고 중간 결과를 `docs/STATE.md`에 압축한다.
 
 ## 업데이트
 

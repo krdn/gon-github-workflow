@@ -110,16 +110,16 @@ class NetworkGateTests(unittest.TestCase):
 
     def test_every_start_rechecks_network(self):
         target = self.root / 'app'
-        w.start(self.root, target, 'owner/app')
+        w.prepare_project(self.root, target, 'owner/app')
         count = len(self.calls)
-        w.start(self.root, target, 'owner/app')
+        w.prepare_project(self.root, target, 'owner/app')
         self.assertGreater(len(self.calls), count)
         self.assertEqual(w.read_json(target / '.github/start-check.json')['status'], 'upstreams_current')
 
     def test_update_blocks_start_without_creating_target(self):
         self.new_sha = 'b' * 40
         with self.assertRaisesRegex(ValueError, '미반영'):
-            w.start(self.root, self.root / 'app', 'owner/app')
+            w.prepare_project(self.root, self.root / 'app', 'owner/app')
         self.assertFalse((self.root / 'app').exists())
         self.assertEqual(w.read_json(self.root / 'upstreams.lock.json'), self.lock)
 
@@ -127,13 +127,13 @@ class NetworkGateTests(unittest.TestCase):
         self.new_sha = 'b' * 40
         w.refresh(self.root, apply=True)
         with self.assertRaisesRegex(ValueError, '영향 검토'):
-            w.start(self.root, self.root / 'app', 'owner/app')
+            w.prepare_project(self.root, self.root / 'app', 'owner/app')
         self.assertFalse((self.root / 'app').exists())
 
     def test_network_failure_blocks_start(self):
         self.fail = True
         with self.assertRaisesRegex(ValueError, 'network unavailable'):
-            w.start(self.root, self.root / 'app', 'owner/app')
+            w.prepare_project(self.root, self.root / 'app', 'owner/app')
         self.assertFalse((self.root / 'app').exists())
 
     def test_upgrade_writes_candidate_and_is_idempotent(self):
@@ -157,32 +157,32 @@ class NetworkGateTests(unittest.TestCase):
 
     def test_pending_research_cannot_pass_ready(self):
         target = self.root / 'app'
-        w.start(self.root, target, 'owner/app')
+        w.prepare_project(self.root, target, 'owner/app')
         with self.assertRaisesRegex(ValueError, '미완료'):
-            w.ready(target)
+            w.implementation_ready(target)
         context = {'checked_at': w.now(), 'objective': 'build', 'decisions': 'use stdlib',
                    'sources': [{'url': 'https://docs.python.org/3/', 'finding': 'checked'}],
                    'status': 'reviewed'}
         w.write_json(target / 'docs/start-context.json', context)
-        w.ready(target)
+        w.implementation_ready(target)
         context['checked_at'] = '2020-01-01T00:00:00+00:00'
         w.write_json(target / 'docs/start-context.json', context)
         with self.assertRaisesRegex(ValueError, '24시간'):
-            w.ready(target)
+            w.implementation_ready(target)
 
     def test_invalid_research_fields_fail_with_clear_error(self):
         target = self.root / 'app'
-        w.start(self.root, target, 'owner/app')
+        w.prepare_project(self.root, target, 'owner/app')
         context = {'checked_at': w.now(), 'objective': 'build', 'decisions': 'stdlib',
                    'sources': [{'url': 'https://docs.python.org/3/', 'finding': 3}],
                    'status': 'reviewed'}
         w.write_json(target / 'docs/start-context.json', context)
         with self.assertRaisesRegex(ValueError, '출처'):
-            w.ready(target)
+            w.implementation_ready(target)
 
     def test_handoff_wrong_repository_rejected_before_network(self):
         target = self.root / 'app'
-        w.start(self.root, target, 'owner/app')
+        w.prepare_project(self.root, target, 'owner/app')
         count = len(self.calls)
         with self.assertRaisesRegex(ValueError, '현재 저장소'):
             w.handoff(target, 'https://github.com/other/app/issues/1')
