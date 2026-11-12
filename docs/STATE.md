@@ -6,7 +6,9 @@
 start가 Git/GitHub와 첫 이슈·Milestone·Project·구성 푸시를 완료하도록 수정했다.
 ready는 구성 재조회이며, AI 조사 검사는 implementation-ready로 분리했다.
 AI 조사·계획·구현은 구성 완료 후 해당 프로젝트에서 별도 요청을 받는다.
-검증과 전달 상태는 [구성 검증 기록](setup-verification.md)을 확인한다.
+PR #10 병합, 36개 테스트와 PR/main CI 통과, 현재 PC 재설치 완료.
+설치본으로 test-app start·ready 성공, 원격 커밋 일치·자원 중복 없음·기존 조사/인수인계 보존 확인.
+AI 작업은 미실행이며 다음 요청을 기다린다. 근거는 [구성 검증 기록](setup-verification.md)에 있다.
 
 ## 최초 표준 전달 — 2026-11-12
 
