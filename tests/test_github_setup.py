@@ -9,6 +9,7 @@ import unittest
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
+from urllib.parse import parse_qs, unquote, urlparse
 
 sys.path.insert(0, str(Path(__file__).parents[1] / 'scripts'))
 import github_setup as setup
@@ -45,6 +46,9 @@ class GitHubSetupTests(unittest.TestCase):
         self.prs = []
         self.upstreams = {}
         self.issue_url = 'https://github.com/owner/app/issues/1'
+        self.protection = None
+        self.fail_protection = False
+        self.corrupt_protection = False
         self.metadata_template = {'full_name': 'owner/app', 'archived': False,
                                   'clone_url': 'https://github.com/owner/app.git',
                                   'ssh_url': 'git@github.com:owner/app.git',
@@ -83,17 +87,37 @@ class GitHubSetupTests(unittest.TestCase):
                     return SimpleNamespace(returncode=1, stdout='', stderr='HTTP 404')
                 if method == 'PATCH': self.metadata.update(payload)
                 result = self.metadata
+            elif endpoint.endswith('/protection'):
+                if self.fail_protection:
+                    return SimpleNamespace(returncode=1, stdout='', stderr='HTTP 503')
+                if method == 'PUT':
+                    self.protection = payload
+                    for name in ('enforce_admins', 'allow_force_pushes', 'allow_deletions', 'required_conversation_resolution'):
+                        self.protection[name] = {'enabled': payload[name]}
+                    if self.corrupt_protection:
+                        self.protection['enforce_admins'] = {'enabled': False}
+                if self.protection is None:
+                    return SimpleNamespace(returncode=1, stdout='', stderr='HTTP 404')
+                result = self.protection
             else:
                 resource = endpoint.split('/')[3].split('?')[0]
                 target = {'milestones': self.milestones, 'labels': self.labels, 'issues': self.issues}[resource]
                 if method == 'GET':
                     result = target
+                    query = parse_qs(urlparse(endpoint).query)
+                    if resource == 'issues' and query.get('labels'):
+                        result = [row for row in target if query['labels'][0] in row.get('labels', [])]
+                elif method == 'DELETE' and resource == 'labels':
+                    name = unquote(urlparse(endpoint).path.rsplit('/', 1)[1]).lower()
+                    target[:] = [row for row in target if row['name'].lower() != name]
+                    return SimpleNamespace(returncode=0, stdout='', stderr='')
                 else:
                     result = dict(payload, number=len(target) + 1)
                     if resource == 'issues': result['html_url'] = self.issue_url
                     target.append(result)
         elif args[1:3] == ['repo', 'create']:
             self.metadata = dict(self.metadata_template)
+            self.metadata['private'] = '--private' in args
             result = None
         elif args[1:4] == ['config', 'get', 'git_protocol']:
             return SimpleNamespace(returncode=0, stdout='https', stderr='')
@@ -310,12 +334,96 @@ class GitHubSetupTests(unittest.TestCase):
             'lock_sha256': w.lock_hash(lock), 'notes': 'review.md',
             'notes_sha256': w.digest(b'test fixture review'), 'reviewer': 'test fixture',
         })
-        w.start(standard, self.target, 'owner/app')
+        with patch.object(w, 'ROOT', standard), patch.object(sys, 'argv', [
+                'gon-workflow', 'start', str(self.target), '--repo', 'owner/app']):
+            self.assertEqual(w.main(), 0)
+        self.assertFalse(self.metadata['private'])
         head = setup.git(self.target, 'rev-parse', 'HEAD')
         w.start(standard, self.target, 'owner/app')
         w.ready(self.target)
         self.assertEqual(setup.git(self.target, 'rev-parse', 'HEAD'), head)
         self.assertEqual(len(self.issues), 1)
+
+    def test_new_public_repository_enables_discussions_and_main_protection(self):
+        metadata = self.prepare()
+        setup.configure(self.target, 'owner/app', 'public', metadata)
+        self.assertTrue(self.metadata['delete_branch_on_merge'])
+        self.assertTrue(self.metadata['has_discussions'])
+        self.assertEqual(self.protection['required_status_checks']['contexts'], ['configuration'])
+        self.assertTrue(self.protection['enforce_admins']['enabled'])
+        self.assertFalse(self.protection['allow_force_pushes']['enabled'])
+        self.assertFalse(self.protection['allow_deletions']['enabled'])
+        self.assertEqual(self.protection['required_pull_request_reviews']['required_approving_review_count'], 0)
+
+    def test_existing_repository_visibility_and_protection_are_preserved(self):
+        self.metadata = dict(self.metadata_template)
+        self.metadata['has_discussions'] = True
+        self.protection = {'custom_rule': 'do not overwrite'}
+        metadata = self.prepare()
+        setup.configure(self.target, 'owner/app', 'public', metadata)
+        self.assertTrue(self.metadata['private'])
+        self.assertEqual(self.protection, {'custom_rule': 'do not overwrite'})
+        self.assertNotIn('delete_branch_on_merge', self.metadata)
+
+    def test_protection_failure_is_not_success_and_retry_reuses_resources(self):
+        metadata = self.prepare()
+        self.fail_protection = True
+        with self.assertRaisesRegex(ValueError, '503'):
+            setup.configure(self.target, 'owner/app', 'public', metadata)
+        self.fail_protection = False
+        metadata = self.prepare()
+        setup.configure(self.target, 'owner/app', 'public', metadata)
+        self.assertEqual([len(self.issues), len(self.milestones), len(self.projects)], [1, 1, 1])
+        self.assertIsNotNone(self.protection)
+
+    def test_mismatched_protection_readback_remains_failed_on_retry(self):
+        self.corrupt_protection = True
+        for _ in range(2):
+            metadata = self.prepare()
+            with self.assertRaisesRegex(ValueError, '보호 설정'):
+                setup.configure(self.target, 'owner/app', 'public', metadata)
+
+    def test_successful_default_cleanup_preserves_user_recreated_label_on_repeat(self):
+        self.labels.append({'name': 'bug', 'color': 'd73a4a', 'description': 'default'})
+        metadata = self.prepare()
+        setup.configure(self.target, 'owner/app', 'public', metadata)
+        self.assertFalse(any(row['name'] == 'bug' for row in self.labels))
+        custom = {'name': 'bug', 'color': '123456', 'description': '사용자가 다시 만든 분류'}
+        self.labels.append(custom)
+        metadata = self.prepare()
+        setup.configure(self.target, 'owner/app', 'public', metadata)
+        self.assertIn(custom, self.labels)
+
+    def test_legacy_creation_receipt_does_not_overwrite_repository_choices(self):
+        metadata = self.prepare()
+        setup.configure(self.target, 'owner/app', 'public', metadata)
+        w.write_json(setup.receipt_file(self.target), {'created_repository': True})
+        self.metadata.update(has_discussions=False, delete_branch_on_merge=False)
+        self.protection = None
+        self.labels.append({'name': 'bug', 'color': '123456', 'description': '기존 분류'})
+        metadata = self.prepare()
+        setup.configure(self.target, 'owner/app', 'public', metadata)
+        self.assertFalse(self.metadata['has_discussions'])
+        self.assertFalse(self.metadata['delete_branch_on_merge'])
+        self.assertIsNone(self.protection)
+        self.assertTrue(any(row['name'] == 'bug' for row in self.labels))
+
+    def test_recreated_remote_does_not_reuse_previous_settings_completion(self):
+        metadata = self.prepare()
+        setup.configure(self.target, 'owner/app', 'public', metadata)
+        self.metadata = None
+        self.labels[:] = [{'name': 'bug', 'color': 'd73a4a', 'description': 'default'}]
+        self.issues.clear()
+        self.milestones.clear()
+        self.items.clear()
+        self.protection = None
+        setup.git(self.bare, 'update-ref', '-d', 'refs/heads/main')
+        metadata = self.prepare()
+        setup.configure(self.target, 'owner/app', 'public', metadata)
+        self.assertTrue(self.metadata.get('delete_branch_on_merge'))
+        self.assertTrue(self.metadata['has_discussions'])
+        self.assertIsNotNone(self.protection)
+        self.assertFalse(any(row['name'] == 'bug' for row in self.labels))
 
 
 if __name__ == '__main__':
