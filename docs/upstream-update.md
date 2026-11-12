@@ -12,7 +12,7 @@
 ## claude-code-action
 
 - 이전: 없음 `없음`
-- 후보: v1.0.271 `4fa93a88de49bbef68b10eb15aabedf28ca0e1ed`
+- 후보: v1 `4fa93a88de49bbef68b10eb15aabedf28ca0e1ed`
 - 현재 문서: https://github.com/anthropics/claude-code-action/blob/main/README.md
 - 영향 검토: 초기 기준으로 채택. docs/analysis.md의 역할 분리와 templates/docs/WORKFLOW.md에 반영. 원본 실행기 자동 설치는 제외하고 버전·문서 변경을 추적한다.
 
