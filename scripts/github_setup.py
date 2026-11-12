@@ -186,8 +186,7 @@ def configure(target, repo, visibility, metadata):
     if metadata is None:
         print(f'GitHub 저장소 생성: {repo} ({visibility})', flush=True)
         run('gh', 'repo', 'create', repo, f'--{visibility}')
-        receipt['created_repository'] = True
-        receipt['defaults_version'] = 1
+        receipt = {'created_repository': True, 'defaults_version': 1}
         write_json(receipt_path, receipt)
         metadata = api(f'repos/{repo}')
     if 'origin' not in git(target, 'remote').splitlines():

@@ -408,6 +408,23 @@ class GitHubSetupTests(unittest.TestCase):
         self.assertIsNone(self.protection)
         self.assertTrue(any(row['name'] == 'bug' for row in self.labels))
 
+    def test_recreated_remote_does_not_reuse_previous_settings_completion(self):
+        metadata = self.prepare()
+        setup.configure(self.target, 'owner/app', 'public', metadata)
+        self.metadata = None
+        self.labels[:] = [{'name': 'bug', 'color': 'd73a4a', 'description': 'default'}]
+        self.issues.clear()
+        self.milestones.clear()
+        self.items.clear()
+        self.protection = None
+        setup.git(self.bare, 'update-ref', '-d', 'refs/heads/main')
+        metadata = self.prepare()
+        setup.configure(self.target, 'owner/app', 'public', metadata)
+        self.assertTrue(self.metadata.get('delete_branch_on_merge'))
+        self.assertTrue(self.metadata['has_discussions'])
+        self.assertIsNotNone(self.protection)
+        self.assertFalse(any(row['name'] == 'bug' for row in self.labels))
+
 
 if __name__ == '__main__':
     unittest.main()
