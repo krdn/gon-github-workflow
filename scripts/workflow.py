@@ -289,7 +289,7 @@ def implementation_ready(target):
     print('AI 작업 준비 확인: 구성 시 도구 확인 + 최근 도메인 조사 기록. AI 실행을 뜻하지 않습니다.')
 
 
-def start(root, target, repo, visibility='private'):
+def start(root, target, repo, visibility='public'):
     from github_setup import configure, preflight
     metadata = preflight(target, repo)
     prepare_project(root, target, repo)
@@ -328,8 +328,8 @@ def main():
     p = commands.add_parser('start')
     p.add_argument('path', type=Path)
     p.add_argument('--repo', required=True)
-    p.add_argument('--visibility', choices=['private', 'public'], default='private',
-                   help='새 저장소 공개 범위. 기존 저장소는 변경하지 않습니다.')
+    p.add_argument('--visibility', choices=['private', 'public'], default='public',
+                   help='새 저장소 공개 범위(기본 public). 기존 저장소는 변경하지 않습니다.')
     p = commands.add_parser('ready')
     p.add_argument('path', type=Path)
     p = commands.add_parser('implementation-ready')

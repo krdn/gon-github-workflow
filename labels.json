@@ -1,0 +1,17 @@
+{
+  "labels": [
+    {"name": "type:feature", "color": "0e8a16", "description": "새 기능 또는 사용자 동작 개선"},
+    {"name": "type:bug", "color": "d73a4a", "description": "재현 가능한 오류와 회귀 수정"},
+    {"name": "type:docs", "color": "0075ca", "description": "사용법·설계·인수인계 문서"},
+    {"name": "type:research", "color": "5319e7", "description": "공식 자료 조사·기술 비교·실험"},
+    {"name": "type:maintenance", "color": "cfd3d7", "description": "리팩터링·의존성·CI·배포 설정 정비"},
+    {"name": "priority:high", "color": "b60205", "description": "일반 작업보다 먼저 처리할 필요가 있음"},
+    {"name": "status:blocked", "color": "d93f0b", "description": "선행 작업이나 외부 조건 때문에 진행할 수 없음"},
+    {"name": "needs:input", "color": "fbca04", "description": "사용자의 정보·확인·결정이 필요함"},
+    {"name": "workflow:ai", "color": "1d76db", "description": "AI에게 맡길 작업. 실행 여부는 이슈와 Project에서 확인"}
+  ],
+  "remove_unused_defaults": [
+    "accessibility", "bug", "documentation", "duplicate", "enhancement",
+    "good first issue", "help wanted", "invalid", "question", "wontfix"
+  ]
+}

@@ -10,7 +10,7 @@
 인터넷 오류는 최신 확인 성공이 아니다. 오류를 해결한 뒤 다시 실행한다.
 
 start가 Git 초기화, 원격 저장소, 첫 이슈·Milestone·Project 연결, 구성 커밋·푸시를 수행한다.
-새 저장소는 기본 비공개이며 `--visibility public`을 지정할 수 있다. 기존 공개 범위는 보존한다.
+새 저장소는 기본 public이며 필요할 때 `--visibility private`을 지정할 수 있다. 기존 공개 범위는 보존한다.
 `gon-workflow ready .`로 원격 커밋과 연결을 확인한다. URL은 `.github/project-setup.json`에 있다.
 
 AI 조사·계획·구현은 구성 완료 후 이 프로젝트에서 별도로 요청한다.
@@ -18,6 +18,9 @@ AI 조사·계획·구현은 구성 완료 후 이 프로젝트에서 별도로 
 status를 reviewed로 바꾸고 `gon-workflow implementation-ready .`로 24시간 이내 조사 기록을 확인한다.
 이 검사는 출처의 진실성·기술 호환성·AI 실행 성공을 증명하지 않는다.
 첫 이슈의 목표를 구체화하고, 큰 작업은 하위 이슈와 의존 관계를 사용한다.
+이슈에는 type:feature·type:bug·type:docs·type:research·type:maintenance 중 맞는 종류를 붙인다.
+필요할 때 priority:high·status:blocked·needs:input·workflow:ai를 추가한다. 일반 진행 상태는 Project에서 관리한다.
+새 공개 저장소의 main은 PR·configuration 검사·리뷰 대화 해결을 요구하며 강제 푸시·삭제를 차단한다.
 
 ## 작업
 

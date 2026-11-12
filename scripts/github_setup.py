@@ -3,8 +3,9 @@ import json
 import re
 import subprocess
 from pathlib import Path
+from urllib.parse import quote
 
-from workflow import api, digest, read_json, run, safe_path, write_json
+from workflow import ROOT, api, digest, read_json, run, safe_path, write_json
 
 MARKER = '<!-- gon-github-workflow:next-task -->'
 
@@ -28,6 +29,59 @@ def collection(endpoint):
         if len(batch) < 100:
             return rows
         page += 1
+
+
+def configure_labels(repo, remove_defaults=False):
+    policy = read_json(ROOT / 'labels.json')
+    current = {label['name'].lower(): label for label in collection(f'repos/{repo}/labels')}
+    desired = {label['name'].lower(): label for label in policy['labels']}
+    for key, label in desired.items():
+        old = current.get(key)
+        if old is None:
+            mutation('POST', f'repos/{repo}/labels', label)
+        elif any(old.get(field) != value for field, value in label.items()):
+            mutation('PATCH', f'repos/{repo}/labels/{quote(old["name"], safe="")}', {
+                'new_name': label['name'], 'color': label['color'], 'description': label['description'],
+            })
+    if remove_defaults:
+        for key in policy['remove_unused_defaults']:
+            if key not in current or key in desired:
+                continue
+            name = quote(current[key]['name'], safe='')
+            used = api(f'repos/{repo}/issues?state=all&labels={name}&per_page=1')
+            if not used:
+                run('gh', 'api', '--method', 'DELETE', f'repos/{repo}/labels/{name}')
+
+
+def protect_public_default(target, repo, metadata, receipt):
+    if (receipt.get('defaults_version') != 1 or metadata['private'] or
+            receipt.get('public_protection_configured')):
+        return
+    endpoint = f'repos/{repo}/branches/{quote(metadata["default_branch"], safe="")}/protection'
+    if api(endpoint, missing_ok=True) is None:
+        receipt['public_protection_requested'] = True
+        write_json(receipt_file(target), receipt)
+        mutation('PUT', endpoint, {
+            'required_status_checks': {'strict': True, 'contexts': ['configuration']},
+            'enforce_admins': True,
+            'required_pull_request_reviews': {'required_approving_review_count': 0,
+                                              'dismiss_stale_reviews': True},
+            'restrictions': None, 'required_conversation_resolution': True,
+            'allow_force_pushes': False, 'allow_deletions': False,
+        })
+    if receipt.get('public_protection_requested'):
+        actual = api(endpoint)
+        if ((actual.get('required_status_checks') or {}).get('contexts') != ['configuration'] or
+                not (actual.get('required_status_checks') or {}).get('strict') or
+                actual.get('required_pull_request_reviews') is None or
+                any(not actual.get(key, {}).get('enabled') for key in
+                    ('enforce_admins', 'required_conversation_resolution')) or
+                any(actual.get(key, {}).get('enabled', True) for key in
+                    ('allow_force_pushes', 'allow_deletions'))):
+            raise ValueError('공개 저장소의 main 보호 설정을 재조회했지만 적용 결과가 다릅니다.')
+    receipt.pop('public_protection_requested', None)
+    receipt['public_protection_configured'] = True
+    write_json(receipt_file(target), receipt)
 
 
 def origin_repo(value):
@@ -133,6 +187,7 @@ def configure(target, repo, visibility, metadata):
         print(f'GitHub 저장소 생성: {repo} ({visibility})', flush=True)
         run('gh', 'repo', 'create', repo, f'--{visibility}')
         receipt['created_repository'] = True
+        receipt['defaults_version'] = 1
         write_json(receipt_path, receipt)
         metadata = api(f'repos/{repo}')
     if 'origin' not in git(target, 'remote').splitlines():
@@ -144,8 +199,13 @@ def configure(target, repo, visibility, metadata):
                          f'기존 이력을 보존하고 {metadata["default_branch"]} 브랜치에서 재실행하세요.')
     if not metadata.get('has_issues', True):
         raise ValueError('기존 저장소의 Issues가 꺼져 있습니다. 활성화 후 재실행하세요.')
-    if receipt.get('created_repository') and not metadata.get('has_discussions'):
-        mutation('PATCH', f'repos/{repo}', {'has_discussions': True})
+    if receipt.get('defaults_version') == 1 and not receipt.get('repository_defaults_configured'):
+        mutation('PATCH', f'repos/{repo}', {'has_discussions': True, 'delete_branch_on_merge': True})
+        metadata = api(f'repos/{repo}')
+        if not metadata.get('has_discussions') or not metadata.get('delete_branch_on_merge'):
+            raise ValueError('토론·병합 후 브랜치 삭제 설정의 적용 결과가 다릅니다.')
+        receipt['repository_defaults_configured'] = True
+        write_json(receipt_path, receipt)
 
     print('GitHub 이슈·Milestone·Project 연결 중', flush=True)
     milestones = collection(f'repos/{repo}/milestones?state=all')
@@ -154,17 +214,17 @@ def configure(target, repo, visibility, metadata):
         milestone = mutation('POST', f'repos/{repo}/milestones', {
             'title': '첫 AI 작업', 'description': MARKER,
         })
-    labels = collection(f'repos/{repo}/labels')
-    if not any(label['name'].lower() == 'workflow:ai' for label in labels):
-        mutation('POST', f'repos/{repo}/labels', {
-            'name': 'workflow:ai', 'color': '1d76db', 'description': '구성 후 별도로 요청할 AI 작업',
-        })
+    clean_defaults = receipt.get('defaults_version') == 1 and not receipt.get('default_labels_cleaned')
+    configure_labels(repo, remove_defaults=clean_defaults)
+    if clean_defaults:
+        receipt['default_labels_cleaned'] = True
+        write_json(receipt_path, receipt)
     issues = collection(f'repos/{repo}/issues?state=all')
     issue = next((i for i in issues if not i.get('pull_request') and MARKER in (i.get('body') or '')), None)
     if issue is None:
         issue = mutation('POST', f'repos/{repo}/issues', {
             'title': 'AI 조사·계획·구현 요청 대기', 'milestone': milestone['number'],
-            'labels': ['workflow:ai'],
+            'labels': ['workflow:ai', 'needs:input'],
             'body': MARKER + '\n\n프로젝트 구성과 AI 실행은 별도 단계입니다.\n\n'
                     '- 현재: 사용자 목표 미지정, AI 작업 미실행\n'
                     '- [ ] 이 프로젝트에서 목표를 별도로 요청\n'
@@ -195,6 +255,7 @@ def configure(target, repo, visibility, metadata):
     if not path.exists() or read_json(path) != setup:
         write_json(path, setup)
     publish(target, repo, metadata['default_branch'])
+    protect_public_default(target, repo, metadata, read_json(receipt_path))
     verify(target)
     print(f'구성 완료: {metadata["html_url"]}\nProject: {project["url"]}\n첫 이슈: {issue["html_url"]}')
     print(f'다음: {target}에서 AI 조사·계획·구현을 별도로 요청하세요. AI는 실행하지 않았습니다.')

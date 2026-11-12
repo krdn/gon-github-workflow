@@ -11,7 +11,8 @@ description: 새 프로젝트를 시작하거나 GitHub 개발 표준을 도입�
 
 - start는 검토·merge된 중앙 main을 fast-forward하고 원본 버전/문서를 매번 조회한다.
 - upstream 변경이나 통신 오류를 무시하고 시작하지 않는다. 중앙 저장소에서 upgrade로 변경 후보를 만들고 docs/upstream-update.md의 영향 검토, 필요한 어댑터 수정, 테스트와 독립 리뷰를 docs/review.md에 기록하고 `record-review --notes docs/review.md --reviewer "실제 리뷰어"`, `validate --reviewed` 후 PR로 반영한다.
-- start가 Git 초기화·GitHub 저장소·첫 이슈·Milestone·Project·구성 커밋과 푸시를 완료한다. 새 저장소 기본값은 비공개이며 `--visibility public`으로 지정할 수 있다. 기존 공개 범위는 보존한다.
+- start가 Git 초기화·GitHub 저장소·첫 이슈·Milestone·Project·구성 커밋과 푸시를 완료한다. 새 저장소 기본값은 public이며 비공개가 필요하면 `--visibility private`으로 지정한다. 기존 공개 범위는 보존한다.
+- 새 공개 저장소에 main PR·configuration CI·리뷰 대화 해결·강제 푸시/삭제 차단을 구성한다. labels.json의 표준 라벨을 쓰고 일반 진행 상태는 Project에서 관리한다.
 - `gon-workflow ready <경로>`로 원격 커밋과 연결을 재조회한다. URL은 `.github/project-setup.json`에 있다.
 - AI 조사·계획·구현은 구성이 완료된 후 해당 프로젝트에서 별도로 요청받아 실행한다. 구성만 요청받은 경우 조사나 구현을 시작하지 않는다.
 - AI 작업 요청 후 공식 자료를 조사해 docs/start-context.json에 목표, 출처 URL/finding, 결정, 실제 checked_at, status=reviewed를 기록한다. `gon-workflow implementation-ready <경로>`로 조사 기록을 확인한다. 조사하지 않은 내용을 채우지 않는다.
