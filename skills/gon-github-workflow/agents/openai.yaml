@@ -1,0 +1,5 @@
+interface:
+  display_name: "Gon GitHub Workflow"
+  short_description: "프로젝트 시작 전 최신 확인과 GitHub 작업·인수인계 연결"
+policy:
+  allow_implicit_invocation: true

@@ -1,0 +1,28 @@
+{
+  "checked_at": "2026-11-12T14:21:30.477622+00:00",
+  "objective": "AI 개발 전 과정을 GitHub 기록으로 연결하고 신규 시작 전 최신 확인을 강제한다.",
+  "sources": [
+    {
+      "url": "https://github.com/automazeio/ccpm",
+      "finding": "현재 Agent Skills 방식으로 PRD/epic/issues를 연결하며 Claude와 Codex를 지원한다."
+    },
+    {
+      "url": "https://github.com/github/spec-kit/blob/main/docs/guides/agentic-sdlc.md",
+      "finding": "명세·버그 조사·Actions 테스트·릴리스·Dependabot을 분리 운영한다."
+    },
+    {
+      "url": "https://github.com/open-gsd/gsd-core",
+      "finding": "기존 gsd-build 저장소가 이전을 안내한다. STATE/CONTEXT 기반 재개를 통합한다."
+    },
+    {
+      "url": "https://github.com/github/gh-aw",
+      "finding": "AI 추론 자동화와 일반 CI/CD를 분리한다. 기본 설치에는 유료 엔진을 활성화하지 않는다."
+    },
+    {
+      "url": "https://docs.github.com/en/actions/concepts/security/github_token",
+      "finding": "GITHUB_TOKEN 생성 PR의 CI가 승인 대기 상태가 될 수 있어 자동 merge를 하지 않는다."
+    }
+  ],
+  "decisions": "Python 표준 라이브러리 + gh. 단일 상태 계약, 안정 릴리스/README 해시 추적, 초안 PR 업데이트. docs/analysis.md 참조.",
+  "status": "reviewed"
+}

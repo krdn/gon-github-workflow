@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -euo pipefail
+root="$(dirname "$(dirname "$(readlink -f "$0")")")"
+if [[ "${1:-}" == start ]]; then
+  [[ "$(git -C "$root" branch --show-current)" == main ]] || { echo '중앙 워크플로가 main이 아닙니다. 검토·merge 후 시작하세요.' >&2; exit 1; }
+  [[ -z "$(git -C "$root" status --porcelain)" ]] || { echo '중앙 워크플로에 미커밋 변경이 있습니다.' >&2; exit 1; }
+  git -C "$root" fetch origin main
+  git -C "$root" merge --ff-only origin/main
+  [[ "$(git -C "$root" rev-parse HEAD)" == "$(git -C "$root" rev-parse origin/main)" ]] || { echo '원격 main과 다릅니다.' >&2; exit 1; }
+fi
+exec python3 "$root/scripts/workflow.py" "$@"
