@@ -6,9 +6,9 @@
 | --- | --- |
 | Code/docs | 설계·명세·ADR·압축된 인수인계 |
 | Issues/sub-issues/dependencies | 작업 기준. 큰 작업에서 계층·차단 관계 연결 |
-| Projects/Milestones/Labels | 프로젝트 생성 시 접근 확인 후 URL·상태 매핑 기록 |
+| Projects/Milestones/Labels | start가 첫 이슈·Milestone·Project를 연결. URL은 project-setup.json |
 | Discussions | 탐색/협의. 비활성 시 이슈로 대체 |
-| PR/Actions | 구현·검증·리뷰 근거. 앱별 CI는 실제 스택으로 추가 |
+| PR/Actions | 구성 파일 검사를 생성. 앱별 CI는 실제 스택으로 추가 |
 | Releases/Deployments/Environments | 전달·운영 대상이 정해지면 구성. 미구성은 미배포 |
 | Security/Dependabot | 스택별 취약점·의존성 갱신 정책 구성 |
 | Rulesets/CODEOWNERS | 실제 권한·플랜 확인 후 적용 결과 기록 |

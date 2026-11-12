@@ -2,24 +2,28 @@
 
 ## 새 저장소 연결
 
-`start`와 도메인 조사·`ready` 후 아래 순서를 적용한다. 기존 저장소는 remote부터 확인한다.
-
 ```bash
-cd /path/to/my-app
-git init -b main
-git add .
-git commit -m 'chore: initialize project workflow'
-gh repo create krdn/my-app --private --source . --remote origin --push
-gh issue create --repo krdn/my-app --title '첫 구현 목표' --body-file /path/to/task.md
-gh project create --owner krdn --title 'ggw-my-app' --format json
-# 반환된 Project 번호를 사용한다.
-gh project link NUMBER --owner krdn --repo krdn/my-app
-gh project item-add NUMBER --owner krdn --url ISSUE_URL
+gon-workflow start /path/to/my-app --repo krdn/my-app
+gon-workflow ready /path/to/my-app
 ```
 
-항상 생성 전에 같은 저장소·작업 키·Project가 있는지 조회한다. timeout 후 POST를 곧바로 재시도하지 않는다.
-`.github/project-management.md`의 기능별 상태와 실제 URL을 `docs/STATE.md`에 연결한다.
-새 기술 스택의 package/lockfile에 맞춰 CI를 추가한다. 이 표준의 테스트는 소비 앱의 테스트가 아니다.
+start가 저장소 생성·Git 연결·첫 이슈·Milestone·Project·구성 푸시를 수행한다.
+[저장소 생성](https://cli.github.com/manual/gh_repo_create)과 [Project 생성](https://cli.github.com/manual/gh_project_create)은 인증된 gh를 사용한다.
+repo·workflow·project 권한이 필요하다. 권한 오류는 구성 성공이 아니며, 인증을 해결한 뒤 같은 명령을 다시 실행한다.
+AI 실행 요청은 구성 이후 프로젝트에서 별도로 한다. 조사·구현·배포 결과는 아직 존재하지 않는다.
+
+기존 원격에 코드가 있으면 먼저 clone한 기본 브랜치에서 실행한다. 원격 불일치·커밋되지 않은 변경은 먼저 정리한다.
+기존 파일을 덮어쓰지 않으며, 관리 파일 충돌은 diff를 확인해 수동 통합한다.
+기존 기본 브랜치의 구성 변경은 별도 PR로 전달한다. 해당 PR을 검증·merge·pull한 뒤 재실행한다.
+구성 중 실패하면 이미 생성한 저장소·첫 이슈·Milestone·Project를 재조회해 재사용한다.
+PR 단계에서 중단돼도 같은 start 명령이 기존 브랜치·PR을 재사용한다. 닫힌 PR은 다시 열어 재개한다.
+커밋 hook·서명 실패 시 이번 실행의 stage만 해제한다. 원인을 해결한 뒤 재실행한다.
+이때 생성 파일의 내용이 기록된 해시와 달라지면 사용자 변경으로 간주해 중단한다.
+
+`.env`와 무관한 미추적 파일은 초기 커밋에 포함하지 않는다. 생성한 구성 파일만 명시적으로 추가한다. 기존 미추적 인수인계·조사 파일도 자동 공개하지 않는다.
+기존 Dependabot 설정은 보존하고, 파일이 없을 때만 기본 설정을 만든다.
+구성 Actions는 파일 형식과 저장소 연결값을 검사한다. 앱 테스트·배포·비밀값·유료 AI 엔진은 별도 작업이다.
+`.github/project-management.md`의 기능별 적용 범위와 실제 URL을 함께 확인한다.
 
 ## 업데이트 판정
 

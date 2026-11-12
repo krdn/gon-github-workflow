@@ -1,0 +1,26 @@
+name: Workflow configuration
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  configuration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: 구성 파일 확인 (앱 테스트는 별도)
+        run: |
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          setup = json.loads(Path('.github/project-setup.json').read_text())
+          assert setup['schema'] == 1
+          assert setup['repo'].lower() == os.environ['GITHUB_REPOSITORY'].lower()
+          for key in ('repository_url', 'issue_url', 'project_url', 'project_number', 'milestone_number'):
+              assert setup[key], key
+          for name in ('workflow-state.json', 'upstreams.lock.json', 'start-check.json'):
+              json.loads((Path('.github') / name).read_text())
+          print('구성 파일 검사 통과. 애플리케이션 테스트/배포는 수행하지 않았습니다.')
+          PY

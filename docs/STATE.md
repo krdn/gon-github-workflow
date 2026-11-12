@@ -1,5 +1,15 @@
 # 작업 인수인계
 
+## 프로젝트 구성 자동화 — 2026-11-13
+
+기준: [#9](https://github.com/krdn/gon-github-workflow/issues/9).
+start가 Git/GitHub와 첫 이슈·Milestone·Project·구성 푸시를 완료하도록 수정했다.
+ready는 구성 재조회이며, AI 조사 검사는 implementation-ready로 분리했다.
+AI 조사·계획·구현은 구성 완료 후 해당 프로젝트에서 별도 요청을 받는다.
+검증과 전달 상태는 [구성 검증 기록](setup-verification.md)을 확인한다.
+
+## 최초 표준 전달 — 2026-11-12
+
 확인일: 2026-11-12. 기준 작업: [#1](https://github.com/krdn/gon-github-workflow/issues/1).
 
 - 목표: GitHub 중심 AI 개발 표준, upstream 검토 업그레이드, 신규 프로젝트 시작 게이트.
@@ -14,4 +24,4 @@
 - 관리: [Project #20](https://github.com/users/krdn/projects/20), 하위 이슈 #2/#3, 첫 Milestone, [Discussions #4](https://github.com/krdn/gon-github-workflow/discussions/4), main PR·필수 test 규칙, Dependabot, Security 정책 적용.
 - 실패 기록: 실제 GitHub API 503에서 시작 차단 후 재조회 성공. 구버전 gh에 update-branch가 없어 Dependabot 재정렬 경로를 사용했다.
 - 미검증: 미래 정시 실행, 원본 새 버전의 실제 후보 PR. 서버/웹 배포와 원격 AI 엔진은 미실행이며 이 로컬 CLI 전달의 완료 조건에 포함하지 않는다.
-- 다음 작업: 실제 프로젝트 요청 시 `gon-workflow start <경로> --repo OWNER/REPO` → 최신 도메인 조사 → `ready` → GitHub 이슈/PR로 구현. 재개는 이 문서와 최신 원격 기록을 대조한다.
+- 다음 작업: 실제 프로젝트 요청 시 `gon-workflow start <경로> --repo OWNER/REPO` → `ready`. AI 작업을 별도로 요청받으면 도메인 조사 → `implementation-ready` → GitHub 이슈/PR로 구현. 재개는 이 문서와 최신 원격 기록을 대조한다.
