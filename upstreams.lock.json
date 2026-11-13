@@ -18,18 +18,18 @@
       "mode": "release",
       "readme_sha256": "076c7ae6d7f58798a0c063ad398356bf64f1ce1002202b5f215a83d893c6fa29",
       "url": "https://github.com/github/spec-kit/tree/0019fa14d12f45edabc2cc3176c9168a68bd0f97",
-      "readme_url": "https://github.com/github/spec-kit/blob/f6143716d3a14f65f0f5857b08b4f9f585787e9c/README.md",
-      "readme_commit": "f6143716d3a14f65f0f5857b08b4f9f585787e9c"
+      "readme_url": "https://github.com/github/spec-kit/blob/2ee2b1e8005905db05f5717300a469b3068b908f/README.md",
+      "readme_commit": "2ee2b1e8005905db05f5717300a469b3068b908f"
     },
     "gsd-core": {
       "repo": "open-gsd/gsd-core",
-      "ref": "v1.20.1",
-      "sha": "9385f4618b52ef68ed8a5e8bdd93cfb25bd87765",
+      "ref": "v1.21.0",
+      "sha": "357508df233ccca0dcf4332b385d6bee9b113da9",
       "mode": "release",
       "readme_sha256": "66fe062ee3705af835b09ffa8da112fd14bc8a6025f0d4fb22b4291d353268a9",
-      "url": "https://github.com/open-gsd/gsd-core/tree/9385f4618b52ef68ed8a5e8bdd93cfb25bd87765",
-      "readme_url": "https://github.com/open-gsd/gsd-core/blob/4226711512fb4035fcbb7d17ae64ac5419d8396a/README.md",
-      "readme_commit": "4226711512fb4035fcbb7d17ae64ac5419d8396a"
+      "url": "https://github.com/open-gsd/gsd-core/tree/357508df233ccca0dcf4332b385d6bee9b113da9",
+      "readme_url": "https://github.com/open-gsd/gsd-core/blob/4504401e4f3cbdabb9ae7d8cf5e80300aea2053f/README.md",
+      "readme_commit": "4504401e4f3cbdabb9ae7d8cf5e80300aea2053f"
     },
     "gh-aw": {
       "repo": "github/gh-aw",
@@ -38,18 +38,18 @@
       "mode": "release",
       "readme_sha256": "d08b4d77cb4d2d711abddb09dc83c0000ba12dc3e14955d4f4a7c49956799e11",
       "url": "https://github.com/github/gh-aw/tree/399a445fe2d8926c616b54b1b82a16b5b2be4445",
-      "readme_url": "https://github.com/github/gh-aw/blob/97fff5784125dabf502cadb75ff1f009ded870ce/README.md",
-      "readme_commit": "97fff5784125dabf502cadb75ff1f009ded870ce"
+      "readme_url": "https://github.com/github/gh-aw/blob/198883b64a10d91b1c4d942888f9fa639d3fce66/README.md",
+      "readme_commit": "198883b64a10d91b1c4d942888f9fa639d3fce66"
     },
     "claude-code-action": {
       "repo": "anthropics/claude-code-action",
       "ref": "v1",
-      "sha": "4fa93a88de49bbef68b10eb15aabedf28ca0e1ed",
+      "sha": "4d75e5f390ee76b2e09c1980ecc99ff3a2e088c8",
       "mode": "release",
       "readme_sha256": "a381c47399445c97480d025a406f485644fdd5f4f7ffd880be0567ac2f7b4640",
-      "url": "https://github.com/anthropics/claude-code-action/tree/4fa93a88de49bbef68b10eb15aabedf28ca0e1ed",
-      "readme_url": "https://github.com/anthropics/claude-code-action/blob/d5f7970ae232b6039636a16ea7f251e58e814f38/README.md",
-      "readme_commit": "d5f7970ae232b6039636a16ea7f251e58e814f38"
+      "url": "https://github.com/anthropics/claude-code-action/tree/4d75e5f390ee76b2e09c1980ecc99ff3a2e088c8",
+      "readme_url": "https://github.com/anthropics/claude-code-action/blob/4d75e5f390ee76b2e09c1980ecc99ff3a2e088c8/README.md",
+      "readme_commit": "4d75e5f390ee76b2e09c1980ecc99ff3a2e088c8"
     }
   }
 }

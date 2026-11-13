@@ -1,5 +1,15 @@
 # 작업 인수인계
 
+## 시작 차단 원본 갱신 — 2026-11-13
+
+기준: [PR #14](https://github.com/krdn/gon-github-workflow/pull/14).
+Claude Code Action `v1`을 `4d75e5f`, GSD Core를 `v1.21.0`으로 갱신했다.
+원본 실행기를 호출하지 않는 계약을 확인했고, 템플릿·스크립트·차단 정책은 유지했다.
+검증: 기존 49개 테스트, 최신 조회 변경 없음, 검토 lock 검증, 실네트워크 임시 폴더 시작 검사 통과.
+독립 리뷰: 실제 `claude-opus-5-5` high, PASS. [영향·한계](upstream-update.md)와 [검토 기록](review.md)에 근거를 남겼다.
+원격 CI·병합 상태는 PR에서 확인한다. `gon-stock02` 생성과 원본 엔진 실행은 이번 범위에 포함하지 않는다.
+다음 행동: 갱신된 중앙 main에서 원래 프로젝트의 start를 재실행한다. 이후 upstream 변경은 다시 검토한다.
+
 ## 신규 공개 저장소·라벨 정책 — 2026-11-13
 
 기준: [#12](https://github.com/krdn/gon-github-workflow/issues/12).
