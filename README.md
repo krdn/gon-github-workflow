@@ -50,7 +50,8 @@ gon-workflow ready /home/gon/dev/my-app
 조사 결과를 자동 생성하거나 AI 실행 성공으로 표시하지 않는다.
 
 [작업 규칙](templates/docs/WORKFLOW.md) · [실패 복구와 기존 저장소 적용](docs/operations.md)
-프로젝트가 커지면 이슈를 나누고 중간 결과를 `docs/STATE.md`에 압축한다.
+큰 요청은 작업별 이슈와 `docs/tasks/<이슈번호>-<짧은이름>.md`로 나눈다.
+`docs/STATE.md`는 현재 작업을 가리키는 짧은 목차이며, 새 세션은 그 작업 파일의 필수 자료만 먼저 읽는다.
 
 ## 업데이트
 
@@ -72,6 +73,16 @@ python3 scripts/workflow.py validate --reviewed
 기존 프로젝트의 상태 요약·조사 기록은 보존하며, 수정된 관리 파일은 자동 덮어쓰지 않는다.
 
 ## 인수인계
+
+생성된 저장소에는 [작업 파일 양식](templates/docs/tasks/TEMPLATE.md)이 포함된다.
+작업 파일에 목표·범위·완료 조건·필수 자료·브랜치/SHA·검증/미검증·실패·다음 행동을 저장한다.
+STATE에는 현재 작업 링크를 남긴다. 완료 이력은 링크로 보존하고 원문 대화·로그는 반복 복사하지 않는다.
+기존 프로젝트는 적용 중인 기록을 재사용한다. 새 양식 도입 때문에 기존 STATE·작업 파일을 덮어쓰지 않는다.
+
+새 세션 시작 문구:
+
+> docs/STATE.md의 현재 작업 파일과 필수 읽기 목록, 관련 이슈·PR·CI만 먼저 확인하고 다음 행동부터 이어가줘.
+
 
 ```bash
 # docs/STATE.md를 갱신하고 commit/push한 뒤 실행

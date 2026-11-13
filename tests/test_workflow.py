@@ -59,6 +59,23 @@ class WorkflowTests(unittest.TestCase):
             w.apply_templates(self.target, 'owner/app', self.lock, self.source)
         self.assertEqual(list(outside.iterdir()), [])
 
+    def test_generated_task_template_and_user_session_records_survive_reapply(self):
+        w.apply_templates(self.target, 'owner/app', self.lock, w.ROOT)
+        template = self.target / 'docs/tasks/TEMPLATE.md'
+        self.assertTrue(template.is_file(), 'new projects need a session task template')
+        self.assertIn('https://github.com/owner/app/issues', template.read_text())
+        state = self.target / 'docs/STATE.md'
+        self.assertIn('현재 작업:', state.read_text())
+        task = self.target / 'docs/tasks/005-ledger.md'
+        task.write_text('완료: 테스트 60개. 다음: 독립 리뷰. 기존 실패를 반복하지 않음.')
+        state.write_text('현재 작업: [005](tasks/005-ledger.md)')
+        expected = (task.read_bytes(), state.read_bytes())
+        w.apply_templates(self.target, 'owner/app', self.lock, w.ROOT)
+        self.assertEqual((task.read_bytes(), state.read_bytes()), expected)
+        managed = w.read_json(self.target / '.github/workflow-state.json')['files']
+        self.assertNotIn('docs/tasks/005-ledger.md', managed)
+        self.assertNotIn('docs/STATE.md', managed)
+
     def test_changed_upstream_is_reported(self):
         latest = json.loads(json.dumps(self.lock))
         latest['sources']['ccpm']['sha'] = 'b' * 40

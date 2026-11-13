@@ -181,7 +181,9 @@ def apply_templates(target, repo, lock, source=ROOT):
                      'AI 조사·계획·구현은 이 프로젝트에서 별도로 요청합니다.\n',
         '.gitignore': '.env\n.env.*\n.local/\n__pycache__/\n',
         'docs/STATE.md': '# 작업 인수인계\n\n기준: https://github.com/' + repo + '/issues\n\n'
-                         '- 목표: 미작성\n- 확정 결정: 없음\n- 완료/미완료: 시작 준비\n'
+                         '- 목표: 미작성\n- 현재 작업: 없음 (AI 작업 요청 대기)\n'
+                         '- 다음 작업: 미정\n- 작업 파일 양식: [TEMPLATE](tasks/TEMPLATE.md)\n'
+                         '- 확정 결정: 없음\n- 완료/미완료: 시작 준비\n'
                          '- 실패한 시도: 없음\n- 검증 근거: 없음\n- 다음 행동: GitHub 구성 완료 후 이 프로젝트에서 AI 작업을 별도로 요청\n',
         'docs/start-context.json': json.dumps({
             'checked_at': now(), 'objective': '', 'sources': [],
