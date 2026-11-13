@@ -37,3 +37,29 @@ branch 모드는 동일 SHA로 README를 조회해 두 번 조회 사이의 시�
 검토 파일 누락은 CLI 최상위 OSError/KeyError 처리로 실패 종료한다. CI에는 검토 파일·문서를 함께 커밋한다.
 checkout SHA는 GitHub API의 actions/checkout v4 commit 조회 결과와 일치한다.
 검토 기록은 사람·모델 판단의 추적 장치이며 그 판단의 진실성을 자동 증명하지 않는다.
+
+## 2026-11-13 원본 갱신
+
+[PR #14](https://github.com/krdn/gon-github-workflow/pull/14): Claude Code Action `v1`의 커밋 이동과 GSD Core `v1.21.0`을 반영한다.
+[영향 검토](upstream-update.md)는 실행기 미설치 계약을 유지하며 템플릿·스크립트 수정이 필요 없다고 판단했다.
+
+- 독립 리뷰 실제 반환 모델: `claude-opus-5-5`, effort high. 결과: PASS, 병합 차단 지적 없음.
+- 기존 테스트: `python3 -B -m unittest discover -s tests -v`로 49개 통과.
+- 최신 조회: `python3 -B scripts/workflow.py check` 결과 `changed: []`, 종료코드 0.
+- lock 형식·문서 상대 링크·`git diff --check` 통과. 원본 5개의 README 본문 해시 불변을 직접 비교했다.
+- 문서 스타일 검사: `evolve docs ste-lint --strict --changed refs/remotes/origin/main --added`는 기준 파일 부재로 실행 불가. 수동 문장 검토와 링크 검사를 수행했다.
+
+리뷰의 낮은 우선순위 관찰은 다음과 같이 처리한다.
+검토 게이트는 기존 계약대로 `docs/review.md` 한 파일의 해시를 묶는다. 영향 문서의 현재 해시는 아래에 별도로 기록한다.
+Action의 명령 제한과 auto 검토는 샌드박스를 보장하지 않는다. 엔진 활성화 시 classifier 비용·모델 접근 권한도 확인한다.
+이동하는 태그 때문에 시작 차단이 반복될 수 있는 정책은 이번 갱신에서 변경하지 않는다.
+
+외부 리뷰는 제공된 자료를 검토했으며 원격 상태·테스트 실행을 독립 재실행하지 않았다.
+GSD 판단은 공식 릴리스 설명과 변경 범위를 기준으로 하며 전체 원본 구현의 보안 감사를 뜻하지 않는다.
+새 lock의 검토 기록을 갱신한 뒤 `validate --reviewed`가 통과했다.
+실네트워크 `prepare_project`는 임시 폴더에 구성 파일을 생성했고, 시작 상태와 복사된 lock의 일치를 확인했다.
+해당 PR 커밋의 CI는 [PR #14](https://github.com/krdn/gon-github-workflow/pull/14)의 검사 결과로 확인한다.
+원본 엔진 실행과 `gon-stock02`의 실제 GitHub 생성은 이번 갱신의 검증 범위에 포함하지 않는다.
+
+- 영향 문서 SHA-256: `03fb3582cd46e4b08e5041ab66d7b618360f36b9fad4b83bc59f8adc9f739926`
+- 외부 리뷰 입력 SHA-256: `6c6153b77f23b4da5ec667b4aff2870d85839df6328c4b72a54cc638e24a6a57`
