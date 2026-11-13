@@ -18,7 +18,10 @@ BLOCK = (MARKER + '\n## 신규 프로젝트 시작 전 확인\n\n'
          '`gon-workflow implementation-ready <경로>` 통과 후 구현한다.\n'
          '실패·미반영 업데이트를 무시하지 않는다. gon-github-workflow 스킬과 '
          '기존 gon-project-lifecycle의 같은 이슈·문서를 재사용한다.\n'
-         '단순 질의·기존 프로젝트 재개를 신규 초기화로 처리하지 않는다.\n' + END_MARKER)
+         '단순 질의·기존 프로젝트 재개를 신규 초기화로 처리하지 않는다.\n'
+         '큰 요청은 저장소의 작업별 기록으로 나누고 `docs/STATE.md`는 현재 작업의 짧은 목차로 유지한다.\n'
+         '새 세션은 현재 작업 파일·필수 읽기 목록·관련 이슈/PR/CI만 먼저 확인한다. '
+         '전체 과거 대화·작업 파일·로그를 반복 읽지 않는다.\n' + END_MARKER)
 
 
 def install(home, codex_home):
