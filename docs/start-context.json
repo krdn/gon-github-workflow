@@ -1,12 +1,24 @@
 {
-  "checked_at": "2026-11-13T12:50:13.166435+00:00",
-  "objective": "세션별 작업 파일과 짧은 STATE 목차를 생성 프로젝트 기본 규칙에 반영",
+  "checked_at": "2026-11-14T13:31:22.360511+00:00",
+  "objective": "워크플로 소비 프로젝트의 기본 비밀 키·인증서·권한 접근 플랫폼을 Infisical로 설정",
   "sources": [
     {
-      "url": "https://docs.github.com/en/issues/tracking-your-work-with-issues/using-issues/adding-sub-issues",
-      "finding": "큰 작업을 하위 이슈로 분할하고 부모 이슈 및 Projects와 연결할 수 있음. 기존 이슈·PR 증거를 재사용하고 작업 파일은 세션 재개용으로 한정."
+      "url": "https://infisical.com/docs/cli/project-config",
+      "finding": "현재 기본 파일은 .infisical.yaml이며 기존 .infisical.json도 지원. YAML이 JSON보다 우선하므로 기존 JSON 위에 YAML을 생성하면 안 된다. environment/secret-path는 CLI 0.44.8 이상."
+    },
+    {
+      "url": "https://infisical.com/docs/integrations/cicd/githubactions",
+      "finding": "Secrets Action은 OIDC machine identity로 런타임 주입 가능. subject와 audience를 실제 저장소·브랜치/Environment에 제한한다."
+    },
+    {
+      "url": "https://infisical.com/docs/documentation/platform/pki/overview",
+      "finding": "인증서 발급·추적·갱신과 CA·정책·프로파일을 별도로 구성한다."
+    },
+    {
+      "url": "https://infisical.com/docs/documentation/platform/pam/overview",
+      "finding": "PAM은 Gateway 기반 인프라 접근 및 사람/AI 세션 권한을 관리한다."
     }
   ],
-  "decisions": "기존 Python CLI와 handoff 유지. 작업별 Markdown 양식, STATE 목차, 선택적 읽기 규칙을 템플릿·스킬·설치 지침에 반영. 자동 세션 전환·토큰 절감량은 보장하지 않음.",
+  "decisions": "기존 stdlib 템플릿 적용기에 사용자 소유 Infisical YAML seed를 추가한다. 기존 JSON/YAML과 수정값 보존. 환경 기본값 dev, Git branch의 prod 자동 매핑 없음. 기본 가이드와 AI 지침으로 Secrets/PKI/PAM 정책을 전달하고 실연결은 계정·대상 결정 후 별도 검증한다.",
   "status": "reviewed"
 }

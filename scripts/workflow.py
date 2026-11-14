@@ -156,13 +156,19 @@ def apply_templates(target, repo, lock, source=ROOT):
     if previous.get('repo', repo) != repo:
         raise ValueError('기존 적용 저장소와 요청한 저장소가 다릅니다.')
     planned = {}
-    seed_templates = {'.github/dependabot.yml'}
+    seed_templates = {'.github/dependabot.yml', '.infisical.yaml'}
     seeds = set(previous.get('seed_files', [])) | (set(previous['files']) & seed_templates)
     for template in sorted((source / 'templates').rglob('*')):
         if template.is_file():
             rel = template.relative_to(source / 'templates').as_posix()
             data = template.read_text(encoding='utf-8').replace('{{REPO}}', repo).encode()
             path = safe_path(target, rel)
+            if rel == '.infisical.yaml':
+                legacy = target / '.infisical.json'
+                if legacy.is_symlink() or legacy.exists():
+                    if not path.exists():
+                        seeds.discard(rel)
+                    continue
             if rel in seed_templates:
                 if not path.exists():
                     planned[rel] = data
@@ -179,7 +185,7 @@ def apply_templates(target, repo, lock, source=ROOT):
         'README.md': f'# {repo.split("/")[-1]}\n\nGitHub 개발 구성을 준비한 프로젝트입니다.\n\n'
                      '[작업 규칙](docs/WORKFLOW.md) · [구성 연결](.github/project-setup.json)\n\n'
                      'AI 조사·계획·구현은 이 프로젝트에서 별도로 요청합니다.\n',
-        '.gitignore': '.env\n.env.*\n.local/\n__pycache__/\n',
+        '.gitignore': '.env\n.env.*\n!.env.example\n.secrets/\n*.key\n*.pem\n*.p12\n*.pfx\n.local/\n__pycache__/\n',
         'docs/STATE.md': '# 작업 인수인계\n\n기준: https://github.com/' + repo + '/issues\n\n'
                          '- 목표: 미작성\n- 현재 작업: 없음 (AI 작업 요청 대기)\n'
                          '- 다음 작업: 미정\n- 작업 파일 양식: [TEMPLATE](tasks/TEMPLATE.md)\n'

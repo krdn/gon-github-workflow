@@ -22,6 +22,12 @@ status를 reviewed로 바꾸고 `gon-workflow implementation-ready .`로 24시�
 필요할 때 priority:high·status:blocked·needs:input·workflow:ai를 추가한다. 일반 진행 상태는 Project에서 관리한다.
 새 공개 저장소의 main은 PR·configuration 검사·리뷰 대화 해결을 요구하며 강제 푸시·삭제를 차단한다.
 
+## 비밀정보와 인프라 접근
+
+기본 플랫폼은 **Infisical**이다. 앱·AI 키는 Secrets Management, 인증서는 Certificate Management, 권한 접근은 PAM을 사용한다.
+[연결과 운영](INFISICAL.md)에 따라 인스턴스·프로젝트를 연결하고 최소 권한·환경 분리·OIDC를 적용한다.
+생성된 `.infisical.yaml`은 연결 전 설정이며 기존 YAML/JSON과 사용자 수정은 보존한다. `ready`는 Infisical 실연결을 검사하지 않는다.
+
 ## 작업
 
 1. 이슈: 목표·수용 기준·범위·검증 방법을 기록한다.

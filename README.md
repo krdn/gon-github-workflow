@@ -19,6 +19,13 @@ python3 scripts/install.py
 Codex는 `CODEX_HOME`을 존중한다. `~/.local/bin`을 PATH에 포함하고 새 세션에서 스킬을 확인한다.
 Orca·원격 호스트·별도 CODEX_HOME은 해당 환경에서 별도 설치해야 한다.
 
+## 기본 보안 플랫폼
+
+이 워크플로의 모든 소비 프로젝트는 **Infisical**을 비밀 키·인증서·권한 접근의 기본 플랫폼으로 사용한다.
+`start`는 `.infisical.yaml`과 [연결 안내](templates/docs/INFISICAL.md)를 생성한다. 기본 환경은 `dev`이며 기존 YAML/JSON과 프로젝트별 수정은 보존한다.
+프로젝트별로 인스턴스 주소·프로젝트 ID·접근 권한을 연결해야 한다. 계정/서버 생성, 비밀값 이전, 인증서 발급, PAM 연결은 자동 실행하지 않는다.
+기존 소비 프로젝트는 명시적인 표준 갱신 시 적용하며 충돌 파일은 PR에서 통합한다.
+
 ## 새 프로젝트 시작
 
 ```bash
