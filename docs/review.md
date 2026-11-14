@@ -63,3 +63,31 @@ GSD 판단은 공식 릴리스 설명과 변경 범위를 기준으로 하며 �
 
 - 영향 문서 SHA-256: `03fb3582cd46e4b08e5041ab66d7b618360f36b9fad4b83bc59f8adc9f739926`
 - 외부 리뷰 입력 SHA-256: `6c6153b77f23b4da5ec667b4aff2870d85839df6328c4b72a54cc638e24a6a57`
+
+
+## 2026-11-14 원본 갱신
+
+[PR #18](https://github.com/krdn/gon-github-workflow/pull/18)은 Claude Code Action `v1`을 `4d75e5f`에서 `f3b070c`로 갱신한다.
+[영향 검토](upstream-update.md)는 현재 실행기 미설치 계약을 근거로 템플릿·스크립트 수정이 불필요하다고 판단했다.
+
+- 독립 리뷰 실제 반환 모델: `claude-opus-5-5`, effort high. 결과: 조건부 PASS, 코드 결함 없음.
+- 병합 조건: 최종 검토 문서 확정 → `record-review` → `validate --reviewed` 순서를 지키고 검토 JSON을 PR에 포함한다.
+- 낮은 우선순위 지적 수용: 내부 동작 미검증 범위를 Claude Code와 SDK 모두로 명시하고 이전 보안 영향 검토 링크를 보존했다.
+- 추가 근거: 아래 검색 결과는 원본 추적 선언 한 줄뿐이다. 공식 [문서 조회 커밋 비교](https://github.com/anthropics/claude-code-action/compare/4d75e5f390ee76b2e09c1980ecc99ff3a2e088c8...9fa68854da5fadef4ed3dce240325a0dfe251880)는 실행 SHA 뒤의 추가 커밋을 확인한다.
+- `python3 -B -m unittest discover -s tests -v`: 50개 통과.
+- `upgrade`와 `check`: 모두 `changed: []`. `validate`, README 본문 해시 5개 불변, 상대 링크와 `git diff --check` 확인도 통과했다.
+- `evolve docs ste-lint --strict --changed refs/remotes/origin/main --added`: 기준 파일 `docs/conventions/ste100-writing.md` 부재로 실행 불가. 문장은 수동 검토했다.
+
+```text
+rg -n 'anthropics/claude-code-action|@anthropic-ai/claude-agent-sdk' scripts templates .github/workflows
+scripts/workflow.py:22:    'claude-code-action': 'anthropics/claude-code-action',
+```
+
+독립 리뷰는 제공한 자료만 확인했으며 원격 조회와 테스트를 재실행하지 않았다.
+리뷰 후 문구·링크 수정분은 직접 확인했다. 검토 기록을 확정한 뒤 해시 연결과 `validate --reviewed`를 실행한다.
+실네트워크 프로젝트 준비 검사·PR CI·병합·설치·`gon-stock03` 시작 결과는 PR의 후속 검증 기록을 따른다.
+Claude Code Action·SDK 자체 실행과 주식 프로젝트 기능은 검증하지 않았다.
+
+- 영향 문서 SHA-256: `d6a5810c20d9e25d2919feab8ee9369bdab8f8a0400ce1ce76f265af3c1116cf`
+- 외부 리뷰 입력 SHA-256: `1045e5240ff2223951657751b8cdae8117750ca7ca5e032dc6799f79d9517c32`
+- 외부 리뷰 응답 SHA-256: `499d4c0f18a3bb7508e1823c0cf451154d42bf06841b0c976ee585fe3ced8c58`

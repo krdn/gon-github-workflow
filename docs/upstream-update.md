@@ -1,38 +1,33 @@
 # 원본 업데이트 검토
 
-2026-11-13. 신규 프로젝트 시작을 막은 두 원본 변경을 [PR #14](https://github.com/krdn/gon-github-workflow/pull/14)에서 함께 반영한다.
-기준은 중앙 main `55dbf7b`이며, 원본 실행기 설치 범위는 [조합 분석](analysis.md)을 따른다.
+2026-11-14. `gon-stock03` 시작을 막은 Claude Code Action 변경을 [PR #18](https://github.com/krdn/gon-github-workflow/pull/18)에서 반영한다.
+중앙 main `b0989d6`과 비교했다. 기존 최신 확인·미검토 변경 차단 정책은 유지한다.
 
 | 원본 | 이전 | 반영 후보 |
 | --- | --- | --- |
-| Claude Code Action | `v1` / `4fa93a88de49bbef68b10eb15aabedf28ca0e1ed` | `v1` / `4d75e5f390ee76b2e09c1980ecc99ff3a2e088c8` |
-| GSD Core | `v1.20.1` / `9385f4618b52ef68ed8a5e8bdd93cfb25bd87765` | `v1.21.0` / `357508df233ccca0dcf4332b385d6bee9b113da9` |
+| Claude Code Action | `v1` / `4d75e5f390ee76b2e09c1980ecc99ff3a2e088c8` | `v1` / `f3b070c88125d33dbae5653df5f143101d4ea9dc` |
 
-## Claude Code Action
+## 변경과 영향
 
-[변경 12개 커밋](https://github.com/anthropics/claude-code-action/compare/4fa93a88de49bbef68b10eb15aabedf28ca0e1ed...4d75e5f390ee76b2e09c1980ecc99ff3a2e088c8)과 action 입력·사용 문서를 검토했다.
-쓰기 권한이 없는 작성자의 PR에서 코드 실행 제한이 기본으로 켜지고, 조건에 따라 기본 권한 모드가 auto로 바뀐다.
-Git 래퍼·인증정보·후속 단계 보호, fork 브랜치 처리와 구조화 출력 전달도 변경됐다.
-세부 조건은 고정된 [사용 문서](https://github.com/anthropics/claude-code-action/blob/4d75e5f390ee76b2e09c1980ecc99ff3a2e088c8/docs/usage.md)와 [보안 문서](https://github.com/anthropics/claude-code-action/blob/4d75e5f390ee76b2e09c1980ecc99ff3a2e088c8/docs/security.md)를 따른다.
+[공식 변경 범위](https://github.com/anthropics/claude-code-action/compare/4d75e5f390ee76b2e09c1980ecc99ff3a2e088c8...f3b070c88125d33dbae5653df5f143101d4ea9dc)는 1개 커밋, 6개 파일이다.
+Claude Code 설치 버전은 `2.1.323`에서 `2.1.325`로 바뀐다.
+Agent SDK 의존성과 두 Bun lock은 `0.3.323`에서 `0.3.325`로 바뀐다.
+해당 diff에는 Action 입력·권한·트리거 변경이 없다. Claude Code·SDK 내부 동작의 동일성을 뜻하지는 않는다.
 
-영향 검토: 현재 중앙·생성 템플릿에는 이 Action을 실행하는 job이나 입력 어댑터가 없다.
-선택적 엔진이라는 기존 계약을 유지하며 lock만 갱신한다.
-향후 엔진을 켤 때는 외부 PR 실행 제한, 권한 모드, 후속 push 인증을 해당 workflow에서 검증한다.
+현재 [원격 엔진 계약](engines.md)은 Claude Code Action을 선택 항목으로 둔다.
+`scripts`, `templates`, `.github/workflows`를 검색하면 원본 추적 선언 외에 이 Action이나 SDK의 실행·설치 경로가 없다.
+따라서 공통 규칙·템플릿·입력 어댑터의 수정 없이 lock과 검토 기록을 갱신한다.
+이 판단은 현재 구성에 한정한다. 엔진을 활성화할 때는 잠긴 SHA로 실제 요청·응답과 권한을 검증한다.
+[이전 보안 영향 검토](https://github.com/krdn/gon-github-workflow/blob/691fcace852bd64aeb96dda0f5a33a59f65c6205/docs/upstream-update.md)의 외부 PR 실행 제한·권한 모드·push 인증 확인도 유지한다.
 
-## GSD Core
+## 문서 조회와 검증 범위
 
-[v1.21.0 릴리스](https://github.com/open-gsd/gsd-core/releases/tag/v1.21.0)와 [변경 범위](https://github.com/open-gsd/gsd-core/compare/9385f4618b52ef68ed8a5e8bdd93cfb25bd87765...357508df233ccca0dcf4332b385d6bee9b113da9)를 검토했다.
-CLI 인수 검증과 worktree 밖 커밋 차단이 강화됐다.
-상태 기록·재개·보관과 설정 파일 읽기 오류를 수정하고, Claude Workflow 사용 가능 여부의 판정도 변경했다.
+원본 5개의 README 본문 해시는 이전 main과 같다.
+GSD Core·gh-aw·Claude Code Action의 README 커밋·URL 변경은 동일 본문의 참조 위치 갱신이다.
+[Action README 조회 커밋](https://github.com/anthropics/claude-code-action/blob/9fa68854da5fadef4ed3dce240325a0dfe251880/README.md)은 실행 SHA보다 뒤에 있다.
+그 커밋의 실행 코드까지 채택한 것은 아니며, 실행 변경 판단에는 위의 고정된 compare를 사용했다.
 
-영향 검토: 이 조합은 GSD 실행기·CLI·설정 형식을 설치하거나 호출하지 않는다.
-`docs/STATE.md`에 결정·검증·다음 행동을 남기는 계약은 유지된다.
-따라서 템플릿·스크립트 수정 없이 lock을 갱신한다. GSD 실행기의 동작 검증은 이번 범위에 포함하지 않는다.
-
-## 문서와 검증 범위
-
-원본 5개의 README 본문 해시는 중앙 main과 같다.
-Spec Kit·gh-aw의 README 커밋·URL 변경은 동일 본문의 조회 시점 갱신이다.
-README가 같아도 실행 코드와 하위 문서는 바뀔 수 있으므로 위의 별도 변경 근거를 사용했다.
-독립 리뷰·검증 결과는 [검토 기록](review.md)에 남기고 `upstream-review.json`으로 lock과 연결한다.
-기존의 최신 확인·미검토 변경 차단 정책은 유지한다.
+`upgrade`로 최신 후보와의 일치를 확인하고 기존 테스트·lock 검증·문서 링크 검사를 수행한다.
+실제 결과와 독립 리뷰는 [검토 기록](review.md)에 남겨 `upstream-review.json`으로 lock과 연결한다.
+Action·SDK 자체 실행과 주식 프로젝트 기능은 이번 중앙 갱신의 검증 범위에 포함하지 않는다.
+중앙 PR CI·병합을 확인한 뒤 설치된 main을 갱신하고 `gon-stock03`의 `start`와 `ready`를 실행한다.
