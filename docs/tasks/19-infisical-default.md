@@ -3,6 +3,7 @@
 - 기준: [Issue #19](https://github.com/krdn/gon-github-workflow/issues/19)
 - 목표: 소비 프로젝트의 앱·AI 비밀 키, 인증서, 권한 접근 기본 플랫폼을 Infisical로 통일한다.
 - 범위: 생성 설정·가이드·AI 지침·설치 블록. 계정/서버 생성과 기존 소비 프로젝트 일괄 이전은 제외한다.
+- 상태: 구현·로컬 검증 완료. 원격 CI·병합·설치 최종 결과는 [PR #20](https://github.com/krdn/gon-github-workflow/pull/20) 본문에서 확인한다.
 - 작업 브랜치: `feat/infisical-default`; 기준 main `f36503dceb9fc1a38e26eca08932597b74cee38e`.
 
 ## 재개에 필요한 자료
@@ -31,4 +32,4 @@
 
 ## 다음 행동
 
-전체 테스트·독립 리뷰·PR CI를 마치고 중앙 main과 설치 지침을 갱신한다. 실제 Infisical 연결은 각 프로젝트의 인스턴스·ID·권한을 확정한 뒤 진행한다.
+PR #20의 CI·병합·설치 결과를 확인하고 미완료인 전달 단계만 이어간다. 전달 완료 후에는 각 소비 프로젝트의 인스턴스·ID·권한을 확정하고 실제 Infisical 연결을 검증한다.
