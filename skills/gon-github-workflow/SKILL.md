@@ -16,6 +16,7 @@ description: 새 프로젝트 구성과 GitHub 개발 표준의 도입·갱신, 
 - `gon-workflow ready <경로>`로 원격 커밋과 연결을 재조회한다. URL은 `.github/project-setup.json`에 있다.
 - AI 조사·계획·구현은 구성이 완료된 후 해당 프로젝트에서 별도로 요청받아 실행한다. 구성만 요청받은 경우 조사나 구현을 시작하지 않는다.
 - AI 작업 요청 후 공식 자료를 조사해 docs/start-context.json에 목표, 출처 URL/finding, 결정, 실제 checked_at, status=reviewed를 기록한다. `gon-workflow implementation-ready <경로>`로 조사 기록을 확인한다. 조사하지 않은 내용을 채우지 않는다.
+- 소비 프로젝트의 비밀 키·인증서·권한 접근은 Infisical을 기본으로 사용한다. 생성된 docs/INFISICAL.md를 따라 프로젝트별 주소·ID·최소 권한을 연결한다. 기존 YAML/JSON을 보존하고 구성 성공과 실제 주입·인증서·PAM 검증을 구분한다. 비밀값을 대화·로그에 출력하지 않는다.
 - 세부 작업과 기능별 적용은 생성된 docs/WORKFLOW.md를 따른다. gon-project-lifecycle이 있으면 같은 이슈/문서를 재사용한다.
 - 큰 요청은 완료 조건·의존관계로 나누고 `docs/tasks/TEMPLATE.md`를 복사한 작업별 기록을 저장한다. 동등한 기존 기록은 재사용하며 사소한 수정은 STATE만 갱신한다.
 - `docs/STATE.md`는 현재 작업 파일·다음 작업·공통 결정·차단 사유의 짧은 목차로 유지한다. 전체 이력을 누적하지 않는다.

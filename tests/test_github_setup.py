@@ -338,6 +338,9 @@ class GitHubSetupTests(unittest.TestCase):
                 'gon-workflow', 'start', str(self.target), '--repo', 'owner/app']):
             self.assertEqual(w.main(), 0)
         self.assertFalse(self.metadata['private'])
+        tracked = setup.git(self.target, 'ls-files').splitlines()
+        self.assertIn('.infisical.yaml', tracked)
+        self.assertIn('docs/INFISICAL.md', tracked)
         head = setup.git(self.target, 'rev-parse', 'HEAD')
         w.start(standard, self.target, 'owner/app')
         w.ready(self.target)

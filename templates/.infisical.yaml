@@ -1,0 +1,7 @@
+version: 1
+general:
+  domain: https://app.infisical.com
+secrets-management:
+  project-id: REPLACE_WITH_INFISICAL_PROJECT_ID
+  environment: dev
+  secret-path: /

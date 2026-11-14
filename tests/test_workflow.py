@@ -82,6 +82,86 @@ class WorkflowTests(unittest.TestCase):
         self.assertEqual(w.check_updates(self.lock, latest), ['ccpm'])
         self.assertEqual(w.check_updates(self.lock, self.lock), [])
 
+    def test_infisical_defaults_and_user_configuration_survive_reapply(self):
+        w.apply_templates(self.target, 'owner/app', self.lock, w.ROOT)
+        config = self.target / '.infisical.yaml'
+        self.assertTrue(config.is_file(), 'new projects need Infisical configuration')
+        self.assertIn('environment: dev', config.read_text())
+        self.assertNotIn('prod', config.read_text())
+        config.write_text('version: 1\ngeneral:\n  domain: https://vault.example.com\n'
+                          'secrets-management:\n  project-id: user-project\n')
+        before = config.read_bytes()
+        w.apply_templates(self.target, 'owner/app', self.lock, w.ROOT)
+        self.assertEqual(config.read_bytes(), before)
+        state = w.read_json(self.target / '.github/workflow-state.json')
+        self.assertIn('.infisical.yaml', state['seed_files'])
+        self.assertNotIn('.infisical.yaml', state['files'])
+        self.assertTrue((self.target / 'docs/INFISICAL.md').is_file())
+
+    def test_existing_infisical_json_is_not_shadowed_by_yaml(self):
+        self.target.mkdir()
+        config = self.target / '.infisical.json'
+        original = '{"workspaceId":"existing-project","domain":"https://vault.example.com"}\n'
+        config.write_text(original)
+        for _ in range(2):
+            w.apply_templates(self.target, 'owner/app', self.lock, w.ROOT)
+            self.assertFalse((self.target / '.infisical.yaml').exists())
+            self.assertEqual(config.read_text(), original)
+            state = w.read_json(self.target / '.github/workflow-state.json')
+            self.assertNotIn('.infisical.json', state['seed_files'])
+            self.assertNotIn('.infisical.yaml', state['seed_files'])
+
+    def test_existing_infisical_yaml_is_preserved_and_not_claimed(self):
+        self.target.mkdir()
+        config = self.target / '.infisical.yaml'
+        config.write_text('version: 1\nsecrets-management:\n  project-id: existing\n')
+        before = config.read_bytes()
+        w.apply_templates(self.target, 'owner/app', self.lock, w.ROOT)
+        self.assertEqual(config.read_bytes(), before)
+        state = w.read_json(self.target / '.github/workflow-state.json')
+        self.assertNotIn('.infisical.yaml', state['files'])
+        self.assertNotIn('.infisical.yaml', state['seed_files'])
+
+    def test_switching_generated_yaml_to_json_does_not_publish_missing_seed(self):
+        w.apply_templates(self.target, 'owner/app', self.lock, w.ROOT)
+        (self.target / '.infisical.yaml').unlink()
+        original = '{"workspaceId":"user-selected-project"}\n'
+        (self.target / '.infisical.json').write_text(original)
+        w.apply_templates(self.target, 'owner/app', self.lock, w.ROOT)
+        self.assertFalse((self.target / '.infisical.yaml').exists())
+        self.assertEqual((self.target / '.infisical.json').read_text(), original)
+        state = w.read_json(self.target / '.github/workflow-state.json')
+        self.assertNotIn('.infisical.yaml', state['seed_files'])
+
+    def test_infisical_yaml_symlink_blocks_all_writes(self):
+        self.target.mkdir()
+        outside = self.root / 'private-config'
+        outside.write_text('user private configuration')
+        (self.target / '.infisical.yaml').symlink_to(outside)
+        with self.assertRaisesRegex(ValueError, '심볼릭'):
+            w.apply_templates(self.target, 'owner/app', self.lock, w.ROOT)
+        self.assertFalse((self.target / 'AGENTS.md').exists())
+        self.assertEqual(outside.read_text(), 'user private configuration')
+
+    def test_infisical_json_symlink_is_preserved_even_if_dangling(self):
+        self.target.mkdir()
+        outside = self.root / 'user-config'
+        original = '{"workspaceId":"user-project"}\n'
+        outside.write_text(original)
+        link = self.target / '.infisical.json'
+        link.symlink_to(outside)
+        for dangling in (False, True):
+            with self.subTest(dangling=dangling):
+                if dangling:
+                    outside.unlink()
+                w.apply_templates(self.target, 'owner/app', self.lock, w.ROOT)
+                self.assertTrue(link.is_symlink())
+                self.assertEqual(link.readlink(), outside)
+                self.assertFalse((self.target / '.infisical.yaml').exists())
+                self.assertEqual(outside.exists(), not dangling)
+                if not dangling:
+                    self.assertEqual(outside.read_text(), original)
+
 
 class NetworkGateTests(unittest.TestCase):
     def setUp(self):
