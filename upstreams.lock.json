@@ -28,8 +28,8 @@
       "mode": "release",
       "readme_sha256": "66fe062ee3705af835b09ffa8da112fd14bc8a6025f0d4fb22b4291d353268a9",
       "url": "https://github.com/open-gsd/gsd-core/tree/357508df233ccca0dcf4332b385d6bee9b113da9",
-      "readme_url": "https://github.com/open-gsd/gsd-core/blob/4504401e4f3cbdabb9ae7d8cf5e80300aea2053f/README.md",
-      "readme_commit": "4504401e4f3cbdabb9ae7d8cf5e80300aea2053f"
+      "readme_url": "https://github.com/open-gsd/gsd-core/blob/d74127322899ff11eda3baf5fa6b93b12f339a22/README.md",
+      "readme_commit": "d74127322899ff11eda3baf5fa6b93b12f339a22"
     },
     "gh-aw": {
       "repo": "github/gh-aw",
@@ -38,18 +38,18 @@
       "mode": "release",
       "readme_sha256": "d08b4d77cb4d2d711abddb09dc83c0000ba12dc3e14955d4f4a7c49956799e11",
       "url": "https://github.com/github/gh-aw/tree/399a445fe2d8926c616b54b1b82a16b5b2be4445",
-      "readme_url": "https://github.com/github/gh-aw/blob/198883b64a10d91b1c4d942888f9fa639d3fce66/README.md",
-      "readme_commit": "198883b64a10d91b1c4d942888f9fa639d3fce66"
+      "readme_url": "https://github.com/github/gh-aw/blob/f955a95d385b8d6cb668cfc28fb6ea49b4d12845/README.md",
+      "readme_commit": "f955a95d385b8d6cb668cfc28fb6ea49b4d12845"
     },
     "claude-code-action": {
       "repo": "anthropics/claude-code-action",
       "ref": "v1",
-      "sha": "4d75e5f390ee76b2e09c1980ecc99ff3a2e088c8",
+      "sha": "f3b070c88125d33dbae5653df5f143101d4ea9dc",
       "mode": "release",
       "readme_sha256": "a381c47399445c97480d025a406f485644fdd5f4f7ffd880be0567ac2f7b4640",
-      "url": "https://github.com/anthropics/claude-code-action/tree/4d75e5f390ee76b2e09c1980ecc99ff3a2e088c8",
-      "readme_url": "https://github.com/anthropics/claude-code-action/blob/4d75e5f390ee76b2e09c1980ecc99ff3a2e088c8/README.md",
-      "readme_commit": "4d75e5f390ee76b2e09c1980ecc99ff3a2e088c8"
+      "url": "https://github.com/anthropics/claude-code-action/tree/f3b070c88125d33dbae5653df5f143101d4ea9dc",
+      "readme_url": "https://github.com/anthropics/claude-code-action/blob/9fa68854da5fadef4ed3dce240325a0dfe251880/README.md",
+      "readme_commit": "9fa68854da5fadef4ed3dce240325a0dfe251880"
     }
   }
 }
