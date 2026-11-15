@@ -1,0 +1,420 @@
+{
+  "collected_on": "2026-11-15",
+  "timezone": "Asia/Seoul",
+  "scope": "Read-only research. Individual samples were collected during the session, not as an atomic cross-system snapshot.",
+  "github": {
+    "workflow": {
+      "repository": "krdn/gon-github-workflow",
+      "local_head": "e2e8e589e8e63c5b918f05c47b39c695a4d90355",
+      "issue_21_state": "closed",
+      "pr_22_merged": true,
+      "main_run": {
+        "id": 43663487594,
+        "head_sha": "e2e8e589e8e63c5b918f05c47b39c695a4d90355",
+        "conclusion": "success"
+      },
+      "project_20": {
+        "owner_type": "User",
+        "items": 6,
+        "issue_21_status": "Done"
+      }
+    },
+    "planning": {
+      "repository": "krdn/gon-stock03",
+      "project_number": 25,
+      "project_items": 24,
+      "open_issues": 24,
+      "pagination_complete": true,
+      "blocked_by": {
+        "1": [],
+        "2": [],
+        "3": [],
+        "5": [],
+        "6": [
+          {
+            "repository": "krdn/gon-stock03",
+            "number": 5
+          }
+        ],
+        "7": [
+          {
+            "repository": "krdn/gon-stock03",
+            "number": 6
+          }
+        ],
+        "8": [
+          {
+            "repository": "krdn/gon-stock03",
+            "number": 6
+          }
+        ],
+        "9": [
+          {
+            "repository": "krdn/gon-stock03",
+            "number": 8
+          },
+          {
+            "repository": "krdn/gon-stock03",
+            "number": 6
+          }
+        ],
+        "10": [
+          {
+            "repository": "krdn/gon-stock03",
+            "number": 7
+          },
+          {
+            "repository": "krdn/gon-stock03",
+            "number": 6
+          }
+        ],
+        "11": [
+          {
+            "repository": "krdn/gon-stock03",
+            "number": 9
+          }
+        ],
+        "12": [
+          {
+            "repository": "krdn/gon-stock03",
+            "number": 11
+          },
+          {
+            "repository": "krdn/gon-stock03",
+            "number": 10
+          },
+          {
+            "repository": "krdn/gon-stock03",
+            "number": 9
+          }
+        ],
+        "13": [
+          {
+            "repository": "krdn/gon-stock03",
+            "number": 12
+          },
+          {
+            "repository": "krdn/gon-stock03",
+            "number": 9
+          }
+        ],
+        "14": [
+          {
+            "repository": "krdn/gon-stock03",
+            "number": 11
+          },
+          {
+            "repository": "krdn/gon-stock03",
+            "number": 13
+          },
+          {
+            "repository": "krdn/gon-stock03",
+            "number": 8
+          }
+        ],
+        "15": [
+          {
+            "repository": "krdn/gon-stock03",
+            "number": 7
+          },
+          {
+            "repository": "krdn/gon-stock03",
+            "number": 6
+          }
+        ],
+        "16": [
+          {
+            "repository": "krdn/gon-stock03",
+            "number": 8
+          },
+          {
+            "repository": "krdn/gon-stock03",
+            "number": 6
+          }
+        ],
+        "17": [
+          {
+            "repository": "krdn/gon-stock03",
+            "number": 9
+          },
+          {
+            "repository": "krdn/gon-stock03",
+            "number": 6
+          }
+        ],
+        "18": [
+          {
+            "repository": "krdn/gon-stock03",
+            "number": 17
+          },
+          {
+            "repository": "krdn/gon-stock03",
+            "number": 11
+          },
+          {
+            "repository": "krdn/gon-stock03",
+            "number": 16
+          }
+        ],
+        "19": [
+          {
+            "repository": "krdn/gon-stock03",
+            "number": 17
+          },
+          {
+            "repository": "krdn/gon-stock03",
+            "number": 18
+          },
+          {
+            "repository": "krdn/gon-stock03",
+            "number": 11
+          },
+          {
+            "repository": "krdn/gon-stock03",
+            "number": 15
+          },
+          {
+            "repository": "krdn/gon-stock03",
+            "number": 14
+          }
+        ],
+        "20": [
+          {
+            "repository": "krdn/gon-stock03",
+            "number": 10
+          }
+        ],
+        "21": [
+          {
+            "repository": "krdn/gon-stock03",
+            "number": 15
+          },
+          {
+            "repository": "krdn/gon-stock03",
+            "number": 7
+          }
+        ],
+        "22": [
+          {
+            "repository": "krdn/gon-stock03",
+            "number": 21
+          },
+          {
+            "repository": "krdn/gon-stock03",
+            "number": 19
+          }
+        ],
+        "23": [
+          {
+            "repository": "krdn/gon-stock03",
+            "number": 5
+          }
+        ],
+        "24": [
+          {
+            "repository": "krdn/gon-stock03",
+            "number": 5
+          }
+        ],
+        "25": [
+          {
+            "repository": "krdn/gon-stock03",
+            "number": 14
+          },
+          {
+            "repository": "krdn/gon-stock03",
+            "number": 24
+          },
+          {
+            "repository": "krdn/gon-stock03",
+            "number": 8
+          },
+          {
+            "repository": "krdn/gon-stock03",
+            "number": 15
+          },
+          {
+            "repository": "krdn/gon-stock03",
+            "number": 17
+          },
+          {
+            "repository": "krdn/gon-stock03",
+            "number": 23
+          },
+          {
+            "repository": "krdn/gon-stock03",
+            "number": 11
+          },
+          {
+            "repository": "krdn/gon-stock03",
+            "number": 21
+          },
+          {
+            "repository": "krdn/gon-stock03",
+            "number": 22
+          },
+          {
+            "repository": "krdn/gon-stock03",
+            "number": 16
+          },
+          {
+            "repository": "krdn/gon-stock03",
+            "number": 13
+          },
+          {
+            "repository": "krdn/gon-stock03",
+            "number": 12
+          },
+          {
+            "repository": "krdn/gon-stock03",
+            "number": 20
+          },
+          {
+            "repository": "krdn/gon-stock03",
+            "number": 10
+          },
+          {
+            "repository": "krdn/gon-stock03",
+            "number": 18
+          }
+        ]
+      },
+      "analysis": {
+        "issues": 24,
+        "edges": 52,
+        "paginationComplete": true,
+        "baseline5": {
+          "direct": [
+            6,
+            23,
+            24
+          ],
+          "all": [
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25
+          ]
+        },
+        "common6": {
+          "direct": [
+            7,
+            8,
+            9,
+            10,
+            15,
+            16,
+            17
+          ],
+          "all": [
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            25
+          ]
+        },
+        "cycleNodes": []
+      },
+      "owner_type": "User",
+      "project_url": "https://github.com/users/krdn/projects/25",
+      "original_membership_equality_verified": false
+    }
+  },
+  "claude_mem": {
+    "runtime": "worker",
+    "reported_worker_version": "15.18.3",
+    "inspected_plugin_cache_version": "15.15.0",
+    "schema_version": 75,
+    "project": "gon-github-workflow",
+    "sample_observations": 236,
+    "scan_fields": [
+      "title",
+      "narrative",
+      "facts"
+    ],
+    "observations_with_github_url": 1,
+    "observations_with_issue_or_pr_url": 0,
+    "observations_with_hash_number": 50,
+    "observations_with_nonempty_files_read_or_modified": 100,
+    "scope_limit": "Regex coverage in selected fields only. Does not establish absence of references in raw tools, summaries, prompts or metadata.",
+    "api_observations_response_keys": [
+      "items",
+      "hasMore",
+      "offset",
+      "limit"
+    ],
+    "api_limit_sample": 1,
+    "population_scope": "All observations matching project=gon-github-workflow at the original query time, not a random sample.",
+    "original_observation_ids_retained": false,
+    "api_observations_sample_endpoint": "/api/observations?project=gon-github-workflow&limit=1&offset=0",
+    "github_url_scope": "The one generic GitHub URL match was not an issue/pull URL; hash-number matches are not a measured issue-link rate."
+  },
+  "verification": {
+    "graph_algorithm": "In-memory breadth-first traversal over GitHub blockedBy edges reversed into blocker -> dependent; unique reachable issue IDs; cycle check.",
+    "neo4j_executed": false,
+    "graphiti_executed": false,
+    "knowledge_agent_primed": false,
+    "remote_mutations": false,
+    "raw_memory_exported": false
+  },
+  "timestamp_precision": "Original samples recorded the date only; exact original per-call timestamps were not retained.",
+  "final_review_recheck": {
+    "started_at": "2026-11-15T02:07:23.039735+00:00",
+    "completed_at": "2026-11-15T02:07:24.467063+00:00",
+    "repository_visibility": {
+      "visibility_workflow": {
+        "isPrivate": false,
+        "nameWithOwner": "krdn/gon-github-workflow",
+        "visibility": "PUBLIC"
+      },
+      "visibility_planning": {
+        "isPrivate": false,
+        "nameWithOwner": "krdn/gon-stock03",
+        "visibility": "PUBLIC"
+      }
+    },
+    "project_items": 24,
+    "open_issues": 23,
+    "same_issue_set": false,
+    "project_only_issue_numbers": [
+      5
+    ],
+    "open_only_issue_numbers": [],
+    "dependency_edges_from_open_issues": 52,
+    "issue_5": {
+      "state": "closed",
+      "closed_at": "2026-11-15T01:59:08Z",
+      "updated_at": "2026-11-15T01:59:40Z"
+    },
+    "interpretation": "Original data is historical. Membership differs after issue 5 closed; dependency edges still exist and do not establish current blocking state."
+  }
+}
