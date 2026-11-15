@@ -39,10 +39,11 @@
 - 초기 근거 재계산: 24개 이슈·52개 관계, #5 후속 20개, #6 후속 17개, 순환 없음.
 - `python3 -B -m unittest discover -s tests -v`: 기존 73개 테스트 통과. 변경은 문서·근거 JSON이며 생산 코드에 변경은 없다.
 - `python3 -B scripts/workflow.py validate --reviewed`: 통과.
-- 연구 상대 링크·줄 인용·JSON·공백 검사를 확인했다. 최종 파일 집합은 수정분 확정 후 검사한다.
+- 최종 상대 링크 15개, 코드 블록, 줄 인용, JSON, 과거·재조회 집계, `git diff --cached --check`를 확인했다. 과거 STATE의 로컬·원격 blob도 일치했다.
 - STE lint는 저장소의 `docs/conventions/ste100-writing.md` 부재로 실행 불가다. 통과로 표시하지 않는다.
 - 외부 검토는 제공 자료를 읽고 내부 정합성을 검토했다. 원격 API·로컬 DB·테스트를 독립 실행하거나 링크를 다시 열지 않았다.
 - Neo4j·Graphiti 실행, 자동 동기화·원격 갱신, 비용·성능 개선은 미검증이다.
+- 문서 커밋은 성공했다. 기존 선택적 graphify hook은 Python 모듈을 찾지 못해 인덱스를 갱신하지 않았다. 이번 범위에서 hook을 설치·수정하지 않는다.
 
 초회 검토 입력 SHA-256: `d7fb36f2158699d28c242318add0a4d675302a08291e10b6f2ea868f2a714776`.
 초회 검토 응답 SHA-256: `0d7ba0c61db047b71ac8c6c4e3e7a7d5d14f9cb805d458bd17eb9c72dcbdf319`.
