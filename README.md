@@ -93,8 +93,22 @@ STATE에는 현재 작업 링크를 남긴다. 완료 이력은 링크로 보존
 
 ```bash
 # docs/STATE.md를 갱신하고 commit/push한 뒤 실행
-gon-workflow handoff /path/to/my-app --issue https://github.com/krdn/my-app/issues/1
+gon-workflow handoff /path/to/my-app --issue https://github.com/krdn/my-app/issues/1 \
+  --task docs/tasks/1-feature.md --dry-run
+# 위 명령에서 --dry-run을 빼면 게시 후 원격 내용을 확인한다.
 ```
+
+`--task`는 선택 항목이다. 현재 브랜치가 origin에 같은 SHA로 푸시되고 작업 트리가 clean이어야 한다.
+STATE·선택 작업 파일의 로컬/커밋/원격 blob을 비교하고, SHA 고정 링크와 시작 문구를 이슈에 남긴다.
+본문 복사 대신 링크를 사용하므로 문서 안의 상대 링크도 해당 커밋에서 열린다.
+같은 전달의 순차 재실행은 댓글을 재사용하며, 게시 후 확인 실패는 성공으로 표시하지 않는다.
+네트워크 오류 뒤 재시도할 때도 먼저 기존 댓글을 조회한다. 동시에 실행한 게시의 exactly-once 보장은 하지 않는다.
+미커밋 작업은 자동으로 커밋하거나 버리지 않는다. 다른 환경에서 재개할 수 있다고 표시하기 전에 별도로 보존한다.
+
+이 명령은 **기록 전달만 수행**한다. CI·사용자 수용·배포·제품 동작과 새 세션 실행은 별도다.
+작업 경계에서는 새 대화에 필요한 기록만 전달하고, 디버깅이 이어질 때는 같은 세션을 사용할 수 있다.
+새 탭에서 기존 세션을 resume하거나 대화를 fork하는 것은 독립된 새 대화 시작과 다르다.
+AI에 새 세션 실행을 요청했다면 실제 세션 ID·프로젝트 경로·첫 작업과 요청한 탭 가시성을 확인한다.
 
 명세·결정은 docs, 실행은 Issues, 진척 보기는 Projects, 변경·검증은 PR/Actions,
 출시는 Releases, 실제 운영 배포는 Environments/Deployments를 사용한다.

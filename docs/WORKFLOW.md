@@ -45,6 +45,9 @@ status를 reviewed로 바꾸고 `gon-workflow implementation-ready .`로 24시�
 `docs/STATE.md`는 12,000자 이내로 유지하고 상세 로그는 이슈·PR·Actions로 연결한다.
 목표 / 확정 결정 / 완료·미완료 / 실패한 시도 / 검증 근거 / 다음 행동을 기록한다.
 커밋·푸시한 뒤 `gon-workflow handoff . --issue https://github.com/krdn/gon-github-workflow/issues/N`으로 이슈에 전달한다.
+선택 작업은 `--task docs/tasks/N-task.md`로 지정하고 `--dry-run`으로 게시 없이 확인한다.
+명령은 Git·원격 파일·댓글 내용을 대조해 커밋 고정 링크를 전달한다. 세션을 생성하거나 실행하지 않는다.
+작업 분할·선행 완료·사용자 수용·새 대화 전환 기준은 [생성 워크플로의 세션 절차](../templates/docs/WORKFLOW.md#세션별-작업과-재개)를 따른다.
 다음 AI는 최신 원격 기록을 읽고 실제 코드·CI 상태를 확인한다. 요약만 믿고 완료를 선언하지 않는다.
 
 ## 업데이트와 복구

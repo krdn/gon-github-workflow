@@ -309,18 +309,84 @@ def ready(target):
     verify(target)
 
 
-def handoff(target, issue):
-    state = read_json(target / '.github/workflow-state.json')
+def handoff(target, issue, task=None, dry_run=False):
+    target = target.resolve()
+    state = read_json(safe_path(target, '.github/workflow-state.json'))
     repo = state['repo']
     if not re.fullmatch(r'https://github.com/' + re.escape(repo) + r'/issues/[1-9][0-9]*', issue):
         raise ValueError('현재 저장소의 이슈 URL이 필요합니다.')
-    path = target / 'docs/STATE.md'
-    body = path.read_text(encoding='utf-8')
-    if len(body) > 12000:
+    from github_setup import collection, git, mutation, origin_repo
+    if Path(git(target, 'rev-parse', '--show-toplevel')).resolve() != target:
+        raise ValueError('인수인계 대상은 Git 저장소 루트여야 합니다.')
+    if origin_repo(git(target, 'config', '--get', 'remote.origin.url')) != repo.lower():
+        raise ValueError('origin과 현재 저장소가 다릅니다.')
+    if git(target, 'status', '--porcelain', '--untracked-files=all'):
+        raise ValueError('미커밋 변경이 있습니다. 작업 기록을 커밋·푸시한 뒤 전달하세요.')
+    branch = git(target, 'branch', '--show-current')
+    if not branch:
+        raise ValueError('브랜치가 필요합니다. detached HEAD에서는 전달하지 않습니다.')
+    head = git(target, 'rev-parse', 'HEAD')
+    remote = git(target, 'ls-remote', '--heads', 'origin', f'refs/heads/{branch}')
+    if not remote or remote.split()[0] != head:
+        raise ValueError('현재 브랜치와 origin의 SHA가 다릅니다. 커밋·푸시 상태를 확인하세요.')
+    reference = api(f'repos/{repo}/git/ref/heads/{quote(branch, safe="")}')
+    if reference.get('object', {}).get('sha') != head:
+        raise ValueError('GitHub 브랜치와 현재 SHA가 다릅니다. 원격 상태를 확인하세요.')
+    path = safe_path(target, 'docs/STATE.md')
+    state_body = path.read_text(encoding='utf-8')
+    if not state_body.strip() or len(state_body) > 12000:
         raise ValueError('인수인계를 12,000자 이내로 압축하세요. 상세 근거는 링크하세요.')
-    run('gh', 'issue', 'view', issue, '--json', 'url')
-    url = run('gh', 'issue', 'comment', issue, '--body-file', str(path))
-    print(url)
+    files = [('현재 상태', 'docs/STATE.md')]
+    if task:
+        path = safe_path(target, task)
+        if not path.is_file() or path.suffix != '.md' or any(c in task for c in '\r\n`'):
+            raise ValueError('작업 파일은 저장소 안의 Markdown 파일이어야 합니다.')
+        task = path.relative_to(target).as_posix()
+        files.append(('선택 작업', task))
+    links = []
+    for label, relative in files:
+        local = git(target, 'hash-object', '--', relative)
+        if git(target, 'rev-parse', f'{head}:{relative}') != local:
+            raise ValueError(f'커밋과 전달 파일이 다릅니다: {relative}')
+        encoded = quote(relative, safe='/')
+        actual = api(f'repos/{repo}/contents/{encoded}?ref={head}')
+        if actual.get('type') != 'file' or actual.get('sha') != local:
+            raise ValueError(f'원격 전달 파일이 커밋과 다릅니다: {relative}')
+        links.append(f'- [{label}](https://github.com/{repo}/blob/{head}/{encoded})')
+    number = issue.rsplit('/', 1)[1]
+    endpoint = f'repos/{repo}/issues/{number}'
+    actual_issue = api(endpoint)
+    if actual_issue.get('html_url', '').lower() != issue.lower() or 'pull_request' in actual_issue:
+        raise ValueError('인수인계 대상 이슈를 확인할 수 없습니다.')
+    selected = f'`{task}`' if task else 'STATE의 현재 작업 파일'
+    prompt = (f'같은 저장소의 AGENTS.md와 docs/STATE.md, {selected}을 읽고 '
+              f'{issue} 및 관련 PR·CI의 현재 상태를 확인해 다음 행동부터 이어가줘. '
+              '필수 자료만 먼저 읽고 선행 조건·사용자 승인·검증 결과를 추정하지 마.')
+    body = ('## 작업 인수인계\n\n'
+            f'- 기준 커밋: `{head}`\n' + '\n'.join(links) + '\n\n'
+            '### 새 대화에서 사용할 시작 문구\n\n> ' + prompt + '\n\n'
+            '기록 전달이며 새 세션 생성·실행은 하지 않습니다. '
+            'CI·사용자 수용·배포·제품 동작은 관련 근거로 별도 확인합니다.\n')
+    if dry_run:
+        print('미리보기: 원격 파일 확인 완료, 댓글 게시·새 세션 실행은 미실행.\n\n' + body)
+        return
+    comments = collection(endpoint + '/comments')
+    comment = next((row for row in comments if row.get('body') == body), None)
+    if comment is None:
+        comment = mutation('POST', endpoint + '/comments', {'body': body})
+    comment_id = comment['id']
+    if not isinstance(comment_id, int) or comment_id <= 0:
+        raise ValueError('게시 결과의 댓글 ID를 확인할 수 없습니다. 이슈를 직접 확인하세요.')
+    url = f'{issue}#issuecomment-{comment_id}'
+    try:
+        actual = api(f'repos/{repo}/issues/comments/{comment_id}')
+    except (ValueError, OSError, subprocess.SubprocessError) as error:
+        raise ValueError(f'댓글이 존재할 수 있으나 원격 확인에 실패했습니다: {url}. '
+                         '재실행은 같은 본문의 댓글을 재사용합니다.') from error
+    if (actual.get('body') != body or actual.get('html_url', '').lower() != url.lower() or
+            actual.get('issue_url', '').lower() != f'https://api.github.com/{endpoint}'.lower()):
+        raise ValueError(f'댓글의 본문·대상이 예상과 다릅니다. 원격 기록을 확인하세요: {url}')
+    print(f'기록 전달·원격 확인 완료: {url}\n새 세션 생성·실행: 미실행')
 
 
 def main():
@@ -345,6 +411,8 @@ def main():
     p = commands.add_parser('handoff')
     p.add_argument('path', type=Path)
     p.add_argument('--issue', required=True)
+    p.add_argument('--task', help='저장소 기준 작업 Markdown 경로')
+    p.add_argument('--dry-run', action='store_true', help='원격 검증 후 전달문만 출력, 게시하지 않음')
     args = parser.parse_args()
     if args.command in ('check', 'upgrade'):
         _, changed = refresh(ROOT, args.command == 'upgrade')
@@ -364,7 +432,7 @@ def main():
     elif args.command == 'implementation-ready':
         implementation_ready(args.path.resolve())
     elif args.command == 'handoff':
-        handoff(args.path.resolve(), args.issue)
+        handoff(args.path.resolve(), args.issue, args.task, args.dry_run)
     return 0
 
 
