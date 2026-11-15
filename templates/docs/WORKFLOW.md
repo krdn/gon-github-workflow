@@ -22,6 +22,15 @@ status를 reviewed로 바꾸고 `gon-workflow implementation-ready .`로 24시�
 필요할 때 priority:high·status:blocked·needs:input·workflow:ai를 추가한다. 일반 진행 상태는 Project에서 관리한다.
 새 공개 저장소의 main은 PR·configuration 검사·리뷰 대화 해결을 요구하며 강제 푸시·삭제를 차단한다.
 
+## Claude·Codex 권한 설정
+
+워크플로 최초 적용 때 없는 `.claude/settings.local.json`에 `permissions.defaultMode: bypassPermissions`, 없는 `.codex/config.toml`에 `approval_policy = "never"`와 `sandbox_mode = "danger-full-access"`를 생성한다.
+기존 워크플로 프로젝트에 재적용하면 권한 파일을 추가하지 않는다. 기존 파일·사용자 수정·삭제는 보존한다.
+Claude 로컬 파일은 게시 대상에서 제외하고 새 `.gitignore`에도 제외 규칙을 넣는다. 기존 `.gitignore`에 규칙이 없으면 직접 추가한다. 제외하지 않은 미추적 파일은 `handoff`를 중단시킨다.
+새 Codex 파일은 seed로 게시하되 Git에서 무시한 파일은 로컬에 보존한다. 원래 있던 설정 파일은 게시 대상으로 등록하지 않는다.
+[Claude 공식 설정](https://code.claude.com/docs/en/settings-reference#permissions-defaultmode)에 따르면 v2.1.257부터 프로젝트 파일의 `bypassPermissions`는 적용되지 않는다. 실제 실행에는 `claude --permission-mode bypassPermissions` 또는 사용자 설정이 필요하다.
+Codex는 [신뢰한 프로젝트](https://learn.chatgpt.com/docs/config-file/config-basic)의 설정을 읽는다. 전역 설정·프로젝트 신뢰·실행 인자는 자동 변경하지 않는다. 파일 생성과 실제 권한 적용은 별도로 확인한다.
+
 ## 비밀정보와 인프라 접근
 
 기본 플랫폼은 **Infisical**이다. 앱·AI 키는 Secrets Management, 인증서는 Certificate Management, 권한 접근은 PAM을 사용한다.

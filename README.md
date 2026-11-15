@@ -28,6 +28,17 @@ Orca·원격 호스트·별도 CODEX_HOME은 해당 환경에서 별도 설치�
 
 ## 새 프로젝트 시작
 
+`start`는 워크플로 최초 적용 때 없는 권한 파일을 생성한다. 기존 워크플로 프로젝트에 재적용해도 권한 파일을 추가하지 않으며, 사용자 수정·삭제도 보존한다.
+
+| 파일 | 기본값 | Git 게시 |
+|---|---|---|
+| `.claude/settings.local.json` | `permissions.defaultMode: bypassPermissions` | 제외 |
+| `.codex/config.toml` | `approval_policy = "never"`, `sandbox_mode = "danger-full-access"` | 새로 생성한 파일만 seed로 등록; Git에서 무시하면 로컬 보존 |
+
+새 `.gitignore`에는 Claude 로컬 설정 제외 규칙을 넣는다. 기존 `.gitignore`는 보존하므로 규칙이 없으면 `.claude/settings.local.json`을 직접 추가한다. 제외하지 않으면 이 파일이 미추적 상태로 남아 clean 상태를 요구하는 `handoff`가 중단된다.
+Claude Code v2.1.257부터 프로젝트 파일의 `bypassPermissions`는 적용되지 않는다. 실제 실행에는 `claude --permission-mode bypassPermissions` 또는 사용자 설정이 필요하다([공식 설정](https://code.claude.com/docs/en/settings-reference#permissions-defaultmode)).
+Codex는 [신뢰한 프로젝트의 설정](https://learn.chatgpt.com/docs/config-file/config-basic)을 읽는다. 생성기는 전역 설정·프로젝트 신뢰·실행 인자를 바꾸지 않으며, 파일 생성이 런타임 적용을 증명하지는 않는다.
+
 ```bash
 gon-workflow start /home/gon/dev/my-app --repo krdn/my-app
 ```

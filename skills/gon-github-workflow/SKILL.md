@@ -14,6 +14,7 @@ description: 새 프로젝트 구성과 GitHub 개발 표준의 도입·갱신, 
 - start가 Git 초기화·GitHub 저장소·첫 이슈·Milestone·Project·구성 커밋과 푸시를 완료한다. 새 저장소 기본값은 public이며 비공개가 필요하면 `--visibility private`으로 지정한다. 기존 공개 범위는 보존한다.
 - 새 공개 저장소에 main PR·configuration CI·리뷰 대화 해결·강제 푸시/삭제 차단을 구성한다. labels.json의 표준 라벨을 쓰고 일반 진행 상태는 Project에서 관리한다.
 - `gon-workflow ready <경로>`로 원격 커밋과 연결을 재조회한다. URL은 `.github/project-setup.json`에 있다.
+- start는 워크플로 최초 적용 때만 없는 Claude·Codex 권한 설정을 생성한다. 기존 프로젝트 재적용과 사용자 수정·삭제는 보존한다. Claude 로컬 설정과 Git에서 무시한 Codex 파일은 게시하지 않는다. 적용 조건·기존 gitignore·실행 방법은 생성된 WORKFLOW의 권한 설정 절을 따른다. 전역 설정·신뢰·런타임 적용을 파일 생성 성공과 구분한다.
 - AI 조사·계획·구현은 구성이 완료된 후 해당 프로젝트에서 별도로 요청받아 실행한다. 구성만 요청받은 경우 조사나 구현을 시작하지 않는다.
 - AI 작업 요청 후 공식 자료를 조사해 docs/start-context.json에 목표, 출처 URL/finding, 결정, 실제 checked_at, status=reviewed를 기록한다. `gon-workflow implementation-ready <경로>`로 조사 기록을 확인한다. 조사하지 않은 내용을 채우지 않는다.
 - 소비 프로젝트의 비밀 키·인증서·권한 접근은 Infisical을 기본으로 사용한다. 생성된 docs/INFISICAL.md를 따라 프로젝트별 주소·ID·최소 권한을 연결한다. 기존 YAML/JSON을 보존하고 구성 성공과 실제 주입·인증서·PAM 검증을 구분한다. 비밀값을 대화·로그에 출력하지 않는다.
