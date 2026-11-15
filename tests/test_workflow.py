@@ -98,6 +98,75 @@ class WorkflowTests(unittest.TestCase):
         self.assertNotIn('.infisical.yaml', state['files'])
         self.assertTrue((self.target / 'docs/INFISICAL.md').is_file())
 
+    def test_agent_defaults_and_user_edits_survive_reapply(self):
+        w.apply_templates(self.target, 'owner/app', self.lock, w.ROOT)
+        claude = self.target / '.claude/settings.local.json'
+        codex = self.target / '.codex/config.toml'
+        self.assertTrue(claude.is_file())
+        self.assertTrue(codex.is_file())
+        self.assertEqual(json.loads(claude.read_text()), {
+            'permissions': {'defaultMode': 'bypassPermissions'},
+        })
+        self.assertEqual(codex.read_text(),
+                         'approval_policy = "never"\nsandbox_mode = "danger-full-access"\n')
+        claude.write_text('{"permissions":{"defaultMode":"default"},"language":"korean"}\n')
+        codex.write_text('approval_policy = "on-request"\nmodel = "user-model"\n')
+        before = (claude.read_bytes(), codex.read_bytes())
+        w.apply_templates(self.target, 'owner/app', self.lock, w.ROOT)
+        self.assertEqual((claude.read_bytes(), codex.read_bytes()), before)
+        state = w.read_json(self.target / '.github/workflow-state.json')
+        self.assertNotIn('.claude/settings.local.json', state['files'])
+        self.assertNotIn('.claude/settings.local.json', state['seed_files'])
+        self.assertNotIn('.codex/config.toml', state['files'])
+        self.assertIn('.codex/config.toml', state['seed_files'])
+
+    def test_existing_agent_settings_are_preserved_and_not_claimed(self):
+        originals = {
+            '.claude/settings.local.json': '{"permissions":{"defaultMode":"plan"}}\n',
+            '.codex/config.toml': 'approval_policy = "on-request"\n',
+        }
+        for rel, content in originals.items():
+            path = self.target / rel
+            path.parent.mkdir(parents=True)
+            path.write_text(content)
+        for _ in range(2):
+            w.apply_templates(self.target, 'owner/app', self.lock, w.ROOT)
+            state = w.read_json(self.target / '.github/workflow-state.json')
+            for rel, content in originals.items():
+                self.assertEqual((self.target / rel).read_text(), content)
+                self.assertNotIn(rel, state['files'])
+                self.assertNotIn(rel, state['seed_files'])
+
+    def test_agent_settings_symlinks_block_all_writes(self):
+        outside = self.root / 'private-config'
+        outside.write_text('private configuration')
+        for rel in ('.claude/settings.local.json', '.codex/config.toml'):
+            with self.subTest(path=rel):
+                link = self.target / rel
+                link.parent.mkdir(parents=True, exist_ok=True)
+                link.symlink_to(outside)
+                with self.assertRaisesRegex(ValueError, '심볼릭'):
+                    w.apply_templates(self.target, 'owner/app', self.lock, w.ROOT)
+                self.assertFalse((self.target / 'AGENTS.md').exists())
+                self.assertEqual(outside.read_text(), 'private configuration')
+                link.unlink()
+
+    def test_existing_workflow_does_not_add_agent_permission_files(self):
+        w.apply_templates(self.target, 'owner/app', self.lock, self.source)
+        w.apply_templates(self.target, 'owner/app', self.lock, w.ROOT)
+        for rel in ('.claude/settings.local.json', '.codex/config.toml'):
+            self.assertFalse((self.target / rel).exists())
+
+    def test_deleted_agent_permission_files_are_not_recreated_or_published(self):
+        w.apply_templates(self.target, 'owner/app', self.lock, w.ROOT)
+        for rel in ('.claude/settings.local.json', '.codex/config.toml'):
+            (self.target / rel).unlink()
+        w.apply_templates(self.target, 'owner/app', self.lock, w.ROOT)
+        state = w.read_json(self.target / '.github/workflow-state.json')
+        for rel in ('.claude/settings.local.json', '.codex/config.toml'):
+            self.assertFalse((self.target / rel).exists())
+            self.assertNotIn(rel, state['seed_files'])
+
     def test_existing_infisical_json_is_not_shadowed_by_yaml(self):
         self.target.mkdir()
         config = self.target / '.infisical.json'

@@ -266,6 +266,8 @@ def publish(target, repo, default_branch):
         '.github/workflow-state.json', '.github/upstreams.lock.json',
         '.github/start-check.json', '.github/project-setup.json',
     }
+    files.difference_update(git(target, 'ls-files', '--others', '--ignored',
+                                '--exclude-standard', '--', '.codex/config.toml').splitlines())
     for path in files:
         safe_path(target, path)
     remote = git(target, 'ls-remote', '--heads', 'origin', f'refs/heads/{default_branch}')

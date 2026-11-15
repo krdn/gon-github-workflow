@@ -341,11 +341,40 @@ class GitHubSetupTests(unittest.TestCase):
         tracked = setup.git(self.target, 'ls-files').splitlines()
         self.assertIn('.infisical.yaml', tracked)
         self.assertIn('docs/INFISICAL.md', tracked)
+        self.assertIn('.codex/config.toml', tracked)
+        self.assertNotIn('.claude/settings.local.json', tracked)
+        self.assertEqual(setup.git(self.target, 'check-ignore', '.claude/settings.local.json'),
+                         '.claude/settings.local.json')
+        self.assertEqual(setup.git(self.target, 'status', '--porcelain'), '')
         head = setup.git(self.target, 'rev-parse', 'HEAD')
         w.start(standard, self.target, 'owner/app')
         w.ready(self.target)
         self.assertEqual(setup.git(self.target, 'rev-parse', 'HEAD'), head)
         self.assertEqual(len(self.issues), 1)
+
+    def test_globally_ignored_codex_config_does_not_block_publish_or_repeat(self):
+        ignore = self.root / 'global-ignore'
+        ignore.write_text('.codex/\n')
+        self.real_run(['git', 'config', '--global', 'core.excludesFile', str(ignore)],
+                      check=True, capture_output=True)
+        metadata = self.prepare()
+        setup.configure(self.target, 'owner/app', 'private', metadata)
+        self.assertTrue((self.target / '.codex/config.toml').is_file())
+        self.assertNotIn('.codex/config.toml', setup.git(self.target, 'ls-files').splitlines())
+        head = setup.git(self.target, 'rev-parse', 'HEAD')
+        metadata = self.prepare()
+        setup.configure(self.target, 'owner/app', 'private', metadata)
+        self.assertEqual(setup.git(self.target, 'rev-parse', 'HEAD'), head)
+
+    def test_existing_gitignore_keeps_ignored_codex_config_local(self):
+        self.target.mkdir()
+        content = '.codex/\n.claude/settings.local.json\n'
+        (self.target / '.gitignore').write_text(content)
+        metadata = self.prepare()
+        setup.configure(self.target, 'owner/app', 'private', metadata)
+        self.assertEqual((self.target / '.gitignore').read_text(), content)
+        self.assertTrue((self.target / '.codex/config.toml').is_file())
+        self.assertNotIn('.codex/config.toml', setup.git(self.target, 'ls-files').splitlines())
 
     def test_new_public_repository_enables_discussions_and_main_protection(self):
         metadata = self.prepare()
