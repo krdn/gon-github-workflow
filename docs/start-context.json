@@ -1,24 +1,28 @@
 {
-  "checked_at": "2026-11-14T13:31:22.360511+00:00",
-  "objective": "워크플로 소비 프로젝트의 기본 비밀 키·인증서·권한 접근 플랫폼을 Infisical로 설정",
+  "checked_at": "2026-11-15T01:28:51.891383+00:00",
+  "objective": "gon-stock03의 수동 보완에서 확인한 handoff 검증과 세션별 작업 계약 개선",
   "sources": [
     {
-      "url": "https://infisical.com/docs/cli/project-config",
-      "finding": "현재 기본 파일은 .infisical.yaml이며 기존 .infisical.json도 지원. YAML이 JSON보다 우선하므로 기존 JSON 위에 YAML을 생성하면 안 된다. environment/secret-path는 CLI 0.44.8 이상."
+      "url": "https://docs.github.com/en/rest/issues/comments",
+      "finding": "이슈 댓글 생성 응답의 id로 댓글을 다시 조회할 수 있으며 raw body와 issue_url을 확인할 수 있다."
     },
     {
-      "url": "https://infisical.com/docs/integrations/cicd/githubactions",
-      "finding": "Secrets Action은 OIDC machine identity로 런타임 주입 가능. subject와 audience를 실제 저장소·브랜치/Environment에 제한한다."
+      "url": "https://git-scm.com/docs/git-ls-remote",
+      "finding": "원격 저장소 ref와 object ID를 조회할 수 있어 현재 브랜치 HEAD와 실제 origin 브랜치의 일치를 비교할 수 있다."
     },
     {
-      "url": "https://infisical.com/docs/documentation/platform/pki/overview",
-      "finding": "인증서 발급·추적·갱신과 CA·정책·프로파일을 별도로 구성한다."
+      "url": "https://docs.github.com/en/issues/planning-and-tracking-with-projects/learning-about-projects/best-practices-for-projects",
+      "finding": "작은 이슈로 분할하고 native 하위 이슈·의존성·Project 보기를 이용해 선행 관계와 상태를 관리한다."
     },
     {
-      "url": "https://infisical.com/docs/documentation/platform/pam/overview",
-      "finding": "PAM은 Gateway 기반 인프라 접근 및 사람/AI 세션 권한을 관리한다."
+      "url": "https://learn.chatgpt.com/docs/developer-commands#built-in-slash-commands",
+      "finding": "new는 새 대화 맥락, resume은 기존 대화 이어가기, fork는 기존 맥락 분기다. 새 탭이나 인수인계 문구 출력은 새 대화 실행 증거가 아니다."
+    },
+    {
+      "url": "https://docs.github.com/en/rest/git/refs#get-a-reference",
+      "finding": "GET git/ref/heads/<branch>는 정확히 일치하는 단일 ref의 object.sha를 반환한다. URL rewrite 설정과 별개로 GitHub 브랜치 HEAD를 확인한다."
     }
   ],
-  "decisions": "기존 stdlib 템플릿 적용기에 사용자 소유 Infisical YAML seed를 추가한다. 기존 JSON/YAML과 수정값 보존. 환경 기본값 dev, Git branch의 prod 자동 매핑 없음. 기본 가이드와 AI 지침으로 Secrets/PKI/PAM 정책을 전달하고 실연결은 계정·대상 결정 후 별도 검증한다.",
+  "decisions": "handoff는 기존 stdlib/gh 경로에서 깨끗한 Git root·origin·현재 브랜치 push·전달 파일을 검증하고 commit 고정 링크를 게시한 뒤 댓글을 재조회한다. --task와 --dry-run을 추가한다. 템플릿에 기존/남은 범위·소유권·선행 완료·수용 증거와 새 대화 전환 기준을 명시한다. 이슈 일괄 생성기·자동 세션 실행기는 추가하지 않는다. 기존 소비 프로젝트의 편집된 문서를 일괄 덮어쓰지 않는다.",
   "status": "reviewed"
 }
