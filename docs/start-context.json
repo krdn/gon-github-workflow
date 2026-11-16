@@ -1,24 +1,20 @@
 {
-  "checked_at": "2026-11-15T03:49:06.974091+00:00",
-  "objective": "새 프로젝트에 요청한 Claude·Codex 권한 설정을 생성하고 기존 설정을 보존한다.",
+  "checked_at": "2026-11-16T16:05:53.680140+00:00",
+  "objective": "GitHub 선기록과 읽기 전용 세션 재개 검증",
   "sources": [
     {
-      "url": "https://code.claude.com/docs/en/settings-reference#permissions-defaultmode",
-      "finding": "v2.1.257부터 프로젝트·로컬 파일의 bypassPermissions는 적용되지 않는다. 사용자 설정이나 실행 인자가 필요하다."
+      "url": "https://docs.github.com/en/rest/repos/contents#get-repository-content",
+      "finding": "ref로 커밋별 파일과 SHA를 조회할 수 있다."
     },
     {
-      "url": "https://code.claude.com/docs/en/settings",
-      "finding": ".claude/settings.local.json은 개인별 프로젝트 설정이며 Git에서 제외한다."
+      "url": "https://cli.github.com/manual/gh_pr_view",
+      "finding": "headRefOid와 statusCheckRollup을 JSON으로 조회한다. 설치본에서 실제 PR 조회 확인."
     },
     {
-      "url": "https://learn.chatgpt.com/docs/config-file/config-basic",
-      "finding": ".codex/config.toml은 신뢰한 프로젝트에서 로드한다. CLI 설정이 우선한다."
-    },
-    {
-      "url": "https://learn.chatgpt.com/docs/config-file/config-reference",
-      "finding": "approval_policy=never와 sandbox_mode=danger-full-access가 지원된다."
+      "url": "https://docs.github.com/en/rest/issues/issue-dependencies",
+      "finding": "blocked_by는 페이지 단위 REST API다. 최신 CLI 필드는 설치본에서 지원하지 않지만 REST는 조회 성공."
     }
   ],
-  "decisions": "기존 seed 경로를 재사용하되 권한 파일은 워크플로 최초 적용 때만 생성한다. Codex 설정은 seed이며 Git에서 무시하면 로컬 보존한다. Claude 로컬 설정은 게시에서 제외한다. 기존 파일·사용자 수정·삭제를 보존한다. 전역 설정·신뢰·실행 인자는 자동 변경하지 않는다.",
+  "decisions": "기존 handoff 검증을 재사용하고 stdlib/gh만 사용한다. 전체 선행 관계와 명시한 PR을 읽되 승인이나 실제 세션 실행으로 해석하지 않는다.",
   "status": "reviewed"
 }
