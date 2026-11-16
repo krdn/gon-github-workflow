@@ -2,12 +2,12 @@
 
 기준 이슈: https://github.com/krdn/gon-github-workflow/issues/27
 
-- 상태: 구현·리뷰 완료, PR CI·main 통합 대기.
+- 상태: 구현·리뷰·구현 SHA의 PR CI 완료. 최종 통합·설치 결과는 #27과 PR28에서 확인한다.
 - 범위·완료 조건: [설계](../plans/github-session-resume.md), #27 체크리스트.
 - 필수 자료: [조사](../research/github-session-2026-11.md), workflow.py handoff, install.py, tests/test_handoff.py. 이전 전체 대화는 읽지 않는다.
 - 브랜치: feat/github-session-resume. 기준 de13110.
 - 검증 경계: ready는 중앙 project-setup 기록 부재로 실패. 재초기화 없이 실제 main SHA·PR26·CI·이슈27 확인.
-- 다음 행동: 수정분 리뷰와 PR CI를 확인하고 main 통합·설치·원격 재개 검증을 수행한다.
+- 다음 행동: #27·PR28의 최종 원격 상태를 확인한다. 통합 또는 설치 미확인 항목만 이어가고, 완료 상태면 후속 요청을 기다린다.
 - 리뷰: Fable5.2/high 우선, 사용량 소진 시에만 Opus5.5/high 사용. 반환 모델을 별도로 확인한다.
 
 ## 구현·검증
@@ -24,3 +24,6 @@
 
 - 최종 로컬 검사: `python3 -m unittest discover -s tests -v` 90/90 PASS, `validate --reviewed`와 `git diff --check` PASS.
 - 수정분 리뷰: 실제 `claude-opus-5-5`/요청 high, session `49da8c0b-320d-4582-8a74-7f9041941c69`, PASS·차단0. 리뷰어는 실행 기록과 수정분만 검토했다. PR head 일치/불일치는 동적으로 self.pr_result를 읽는 fixture와 두 테스트로 확인했다.
+
+- 구현 `64799c0`의 실제 clean clone smoke: 원격 문서3개 일치, #27 open·native 선행0개, PR28 head 일치, session_started=false. `python3 <clone>/scripts/workflow.py resume <clone> --issue https://github.com/krdn/gon-github-workflow/issues/27 --task docs/tasks/27-github-session-resume.md --plan docs/plans/github-session-resume.md --pr https://github.com/krdn/gon-github-workflow/pull/28` 실행.
+- [PR28](https://github.com/krdn/gon-github-workflow/pull/28)의 구현 SHA [CI](https://github.com/krdn/gon-github-workflow/actions/runs/43905267128) PASS. 후속 기록 커밋의 CI·main SHA·전역 설치는 #27의 최종 원격 증거를 따른다.
