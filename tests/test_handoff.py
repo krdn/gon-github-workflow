@@ -55,6 +55,12 @@ class HandoffTests(unittest.TestCase):
         self.fail_post_after_write = False
         self.remote_file_mismatch = False
         self.remote_branch_mismatch = False
+        self.issue_state = 'open'
+        self.blockers = []
+        self.fail_dependencies = False
+        self.pr_result = {'url': 'https://github.com/owner/app/pull/6', 'state': 'OPEN',
+                          'headRefOid': self.head, 'isDraft': True, 'reviewDecision': '',
+                          'statusCheckRollup': [{'conclusion': 'FAILURE'}]}
         intercept = patch.object(subprocess, 'run', side_effect=self.process)
         intercept.start()
         self.addCleanup(intercept.stop)
@@ -80,11 +86,18 @@ class HandoffTests(unittest.TestCase):
         elif args[1:3] == ['issue', 'comment']:
             row = self.comment(Path(args[args.index('--body-file') + 1]).read_text())
             return SimpleNamespace(returncode=0, stdout=row['html_url'], stderr='')
+        elif args[1:3] == ['pr', 'view']:
+            result = self.pr_result
         elif args[1] == 'api':
             method = args[args.index('--method') + 1]
             endpoint = args[args.index('--method') + 2]
             if endpoint == 'repos/owner/app/issues/5':
-                result = {'html_url': self.issue}
+                result = {'html_url': self.issue, 'state': self.issue_state, 'title': '작업5'}
+            elif '/dependencies/blocked_by' in endpoint:
+                if self.fail_dependencies:
+                    return SimpleNamespace(returncode=1, stdout='', stderr='HTTP 403')
+                page = int(parse_qs(urlparse(endpoint).query).get('page', ['1'])[0])
+                result = self.blockers[(page - 1) * 100:page * 100]
             elif '/git/ref/heads/' in endpoint:
                 result = {'object': {'sha': ('0' * 40 if self.remote_branch_mismatch
                                             else self.git('rev-parse', 'HEAD'))}}
@@ -246,3 +259,118 @@ class HandoffTests(unittest.TestCase):
         self.invoke()
         self.invoke()
         self.assertEqual(len(self.comments), 101)
+
+    def prepare_resume(self):
+        (self.target / self.task).write_text(f'# 작업\n기준 이슈: {self.issue}\n')
+        self.plan = 'docs/plan.md'
+        (self.target / self.plan).write_text('# 계획\n한 작업만 구현한다.\n')
+        self.git('add', '.')
+        self.git('commit', '-m', 'record plan and issue')
+        self.git('push', 'origin', 'task/next')
+        self.head = self.git('rev-parse', 'HEAD')
+
+    def resume_cli(self, *extra):
+        output, errors = io.StringIO(), io.StringIO()
+        with patch.object(sys, 'argv', ['workflow.py', 'resume', str(self.target),
+                                       '--issue', self.issue, '--task', self.task, *extra]), \
+                contextlib.redirect_stdout(output), contextlib.redirect_stderr(errors):
+            try:
+                code = w.main()
+            except SystemExit as error:
+                code = error.code
+        self.assertEqual(code, 0, errors.getvalue())
+        return json.loads(output.getvalue())
+
+    def test_resume_cli_verifies_plan_and_reports_failed_ci_without_mutation(self):
+        self.prepare_resume()
+        result = self.resume_cli('--plan', self.plan, '--pr', self.pr_result['url'])
+        self.assertEqual(result['head'], self.head)
+        self.assertEqual(result['pull_requests'][0]['statusCheckRollup'][0]['conclusion'], 'FAILURE')
+        self.assertFalse(result['session_started'])
+        self.assertFalse(result['pull_requests'][0]['head_matches_checkpoint'])
+        self.assertTrue(any('/docs/plan.md' in link for link in result['links']))
+        self.assertEqual(self.comments, [])
+        self.assertTrue(all('POST' not in args for args in self.calls))
+
+    def test_resume_rejects_closed_issue_and_mismatched_task_issue(self):
+        self.prepare_resume()
+        self.issue_state = 'closed'
+        with self.assertRaisesRegex(ValueError, '열린 이슈'):
+            self.resume_cli()
+        self.issue_state = 'open'
+        (self.target / self.task).write_text(self.issue + '0')
+        self.git('add', '.')
+        self.git('commit', '-m', 'different issue')
+        self.git('push', 'origin', 'task/next')
+        with self.assertRaisesRegex(ValueError, '작업 파일.*이슈'):
+            self.resume_cli()
+
+    def test_resume_preserves_blocked_and_not_planned_dependencies_across_pages(self):
+        self.prepare_resume()
+        self.blockers = [{'html_url': f'https://github.com/owner/app/issues/{n+100}',
+                          'title': '선행', 'state': 'closed', 'state_reason': 'not_planned'}
+                         for n in range(101)]
+        self.blockers[-1]['state'] = 'open'
+        result = self.resume_cli()
+        self.assertEqual(len(result['blocked_by']), 101)
+        self.assertEqual(result['blocked_by'][-1]['state'], 'open')
+        self.assertEqual(result['blocked_by'][0]['state_reason'], 'not_planned')
+        self.assertEqual(result['pull_requests'], [])
+        self.assertIn('미지정', ' '.join(result['limitations']))
+
+    def test_resume_remote_query_failure_does_not_report_no_dependencies(self):
+        self.prepare_resume()
+        self.fail_dependencies = True
+        with self.assertRaises(ValueError):
+            self.resume_cli()
+        self.assertEqual(self.comments, [])
+
+    def test_resume_unpublished_plan_and_unsafe_path_fail(self):
+        self.prepare_resume()
+        for plan in ['docs/absent.md', '../outside.md', str(self.state)]:
+            with self.subTest(plan=plan), self.assertRaises(ValueError):
+                self.resume_cli('--plan', plan)
+
+    def test_resume_rejects_foreign_pr_and_wrong_returned_url(self):
+        self.prepare_resume()
+        with self.assertRaisesRegex(ValueError, 'PR URL'):
+            self.resume_cli('--pr', 'https://github.com/other/app/pull/6')
+        self.pr_result['url'] = 'https://github.com/owner/app/pull/7'
+        with self.assertRaisesRegex(ValueError, 'PR.*확인'):
+            self.resume_cli('--pr', 'https://github.com/owner/app/pull/6')
+
+    def test_resume_empty_ci_is_not_success(self):
+        self.prepare_resume()
+        self.pr_result['statusCheckRollup'] = []
+        result = self.resume_cli('--pr', self.pr_result['url'])
+        self.assertEqual(result['pull_requests'][0]['statusCheckRollup'], [])
+        self.assertIn('CI', ' '.join(result['limitations']))
+
+    def test_resume_uses_existing_dirty_and_remote_blob_guards(self):
+        self.prepare_resume()
+        self.remote_file_mismatch = True
+        with self.assertRaisesRegex(ValueError, '원격 전달 파일'):
+            self.resume_cli()
+        self.remote_file_mismatch = False
+        self.state.write_text('unsaved')
+        with self.assertRaisesRegex(ValueError, '미커밋'):
+            self.resume_cli()
+        self.assertEqual(self.state.read_text(), 'unsaved')
+
+    def test_resume_reports_matching_pr_head(self):
+        self.prepare_resume()
+        self.pr_result['headRefOid'] = self.head
+        result = self.resume_cli('--pr', self.pr_result['url'])
+        self.assertTrue(result['pull_requests'][0]['head_matches_checkpoint'])
+
+    def test_resume_local_ignored_plan_is_not_a_published_plan(self):
+        self.prepare_resume()
+        (self.target / '.gitignore').write_text('docs/local-plan.md\n')
+        self.git('add', '.')
+        self.git('commit', '-m', 'ignore local plan')
+        self.git('push', 'origin', 'task/next')
+        (self.target / 'docs/local-plan.md').write_text('# 미게시 설계')
+        self.assertEqual(self.git('status', '--porcelain'), '')
+        with self.assertRaises(ValueError):
+            self.resume_cli('--plan', 'docs/local-plan.md')
+        self.assertEqual(self.comments, [])
