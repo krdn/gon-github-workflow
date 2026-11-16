@@ -316,13 +316,13 @@ def ready(target):
     verify(target)
 
 
-def handoff(target, issue, task=None, dry_run=False):
+def verified_checkpoint(target, issue, task=None, plans=()):
     target = target.resolve()
     state = read_json(safe_path(target, '.github/workflow-state.json'))
     repo = state['repo']
     if not re.fullmatch(r'https://github.com/' + re.escape(repo) + r'/issues/[1-9][0-9]*', issue):
         raise ValueError('현재 저장소의 이슈 URL이 필요합니다.')
-    from github_setup import collection, git, mutation, origin_repo
+    from github_setup import git, origin_repo
     if Path(git(target, 'rev-parse', '--show-toplevel')).resolve() != target:
         raise ValueError('인수인계 대상은 Git 저장소 루트여야 합니다.')
     if origin_repo(git(target, 'config', '--get', 'remote.origin.url')) != repo.lower():
@@ -344,12 +344,14 @@ def handoff(target, issue, task=None, dry_run=False):
     if not state_body.strip() or len(state_body) > 12000:
         raise ValueError('인수인계를 12,000자 이내로 압축하세요. 상세 근거는 링크하세요.')
     files = [('현재 상태', 'docs/STATE.md')]
-    if task:
-        path = safe_path(target, task)
-        if not path.is_file() or path.suffix != '.md' or any(c in task for c in '\r\n`'):
-            raise ValueError('작업 파일은 저장소 안의 Markdown 파일이어야 합니다.')
-        task = path.relative_to(target).as_posix()
-        files.append(('선택 작업', task))
+    for label, relative in ([('선택 작업', task)] if task else []) + [('설계', plan) for plan in plans]:
+        path = safe_path(target, relative)
+        if not path.is_file() or path.suffix != '.md' or any(c in relative for c in '\r\n`'):
+            raise ValueError('작업·설계 파일은 저장소 안의 Markdown 파일이어야 합니다.')
+        relative = path.relative_to(target).as_posix()
+        files.append((label, relative))
+        if label == '선택 작업':
+            task = relative
     links = []
     for label, relative in files:
         local = git(target, 'hash-object', '--', relative)
@@ -365,6 +367,53 @@ def handoff(target, issue, task=None, dry_run=False):
     actual_issue = api(endpoint)
     if actual_issue.get('html_url', '').lower() != issue.lower() or 'pull_request' in actual_issue:
         raise ValueError('인수인계 대상 이슈를 확인할 수 없습니다.')
+    return {'repo': repo, 'branch': branch, 'head': head, 'links': links,
+            'issue': actual_issue, 'task': task}
+
+
+def resume(target, issue, task, plans=(), prs=()):
+    from github_setup import collection
+    checkpoint = verified_checkpoint(target, issue, task, plans)
+    repo = checkpoint['repo']
+    if checkpoint['issue'].get('state') != 'open':
+        raise ValueError('재개 기준은 열린 이슈여야 합니다. 종료 사유와 후속 작업을 확인하세요.')
+    task_body = safe_path(target.resolve(), checkpoint['task']).read_text(encoding='utf-8')
+    if not re.search(re.escape(issue) + r'(?![A-Za-z0-9_/?#])', task_body):
+        raise ValueError('선택 작업 파일에 기준 이슈의 정확한 URL을 기록하세요.')
+    dependencies = collection(f'repos/{repo}/issues/{issue.rsplit("/", 1)[1]}/dependencies/blocked_by')
+    pull_requests = []
+    for pr in dict.fromkeys(prs):
+        if not re.fullmatch(r'https://github.com/' + re.escape(repo) + r'/pull/[1-9][0-9]*', pr):
+            raise ValueError('현재 저장소의 PR URL이 필요합니다.')
+        result = json.loads(run('gh', 'pr', 'view', pr, '--repo', repo, '--json',
+                               'url,state,headRefOid,isDraft,reviewDecision,statusCheckRollup'))
+        if (result.get('url', '').lower() != pr.lower() or
+                not re.fullmatch(r'[0-9a-f]{40}', result.get('headRefOid', '')) or
+                result.get('state') not in ('OPEN', 'CLOSED', 'MERGED') or
+                'statusCheckRollup' not in result):
+            raise ValueError('PR 조회 결과를 확인할 수 없습니다.')
+        result['head_matches_checkpoint'] = result['headRefOid'] == checkpoint['head']
+        pull_requests.append(result)
+    report = {
+        'checked_at': now(), 'repo': repo, 'branch': checkpoint['branch'],
+        'head': checkpoint['head'], 'links': checkpoint['links'],
+        'issue': {key: checkpoint['issue'].get(key) for key in ('html_url', 'title', 'state')},
+        'blocked_by': [{key: row.get(key) for key in ('html_url', 'title', 'state', 'state_reason')}
+                       for row in dependencies],
+        'pull_requests': pull_requests, 'session_started': False,
+        'limitations': ['기록의 원격 일치 확인이며 작업 승인·세션 생성·수용·배포 성공이 아닙니다.',
+                        '설계·PR 미지정은 없음/검증 성공을 뜻하지 않습니다. 필수 자료를 직접 확인하세요.',
+                        'CI 실패·대기·빈 결과와 선행 이슈의 종료 사유·통합·수용을 별도로 판단하세요.',
+                        '현재 시점 관측이며 잠금이 아닙니다. 작업 소유권과 변경 여부를 확인하세요.'],
+    }
+    print(json.dumps(report, ensure_ascii=False, indent=2))
+
+
+def handoff(target, issue, task=None, dry_run=False):
+    from github_setup import collection, mutation
+    checkpoint = verified_checkpoint(target, issue, task)
+    repo, head, links, task = (checkpoint[key] for key in ('repo', 'head', 'links', 'task'))
+    endpoint = f'repos/{repo}/issues/{issue.rsplit("/", 1)[1]}'
     selected = f'`{task}`' if task else 'STATE의 현재 작업 파일'
     prompt = (f'같은 저장소의 AGENTS.md와 docs/STATE.md, {selected}을 읽고 '
               f'{issue} 및 관련 PR·CI의 현재 상태를 확인해 다음 행동부터 이어가줘. '
@@ -420,6 +469,12 @@ def main():
     p.add_argument('--issue', required=True)
     p.add_argument('--task', help='저장소 기준 작업 Markdown 경로')
     p.add_argument('--dry-run', action='store_true', help='원격 검증 후 전달문만 출력, 게시하지 않음')
+    p = commands.add_parser('resume', help='원격 작업 기록·선행 관계·지정 PR/CI 확인 (읽기 전용)')
+    p.add_argument('path', type=Path)
+    p.add_argument('--issue', required=True)
+    p.add_argument('--task', required=True, help='기준 이슈 URL을 포함한 작업 Markdown 경로')
+    p.add_argument('--plan', action='append', default=[], help='검증할 설계 Markdown 경로 (반복 가능)')
+    p.add_argument('--pr', action='append', default=[], help='확인할 같은 저장소 PR URL (반복 가능)')
     args = parser.parse_args()
     if args.command in ('check', 'upgrade'):
         _, changed = refresh(ROOT, args.command == 'upgrade')
@@ -438,6 +493,8 @@ def main():
         ready(args.path.resolve())
     elif args.command == 'implementation-ready':
         implementation_ready(args.path.resolve())
+    elif args.command == 'resume':
+        resume(args.path.resolve(), args.issue, args.task, args.plan, args.pr)
     elif args.command == 'handoff':
         handoff(args.path.resolve(), args.issue, args.task, args.dry_run)
     return 0

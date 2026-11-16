@@ -15,7 +15,7 @@ python3 scripts/install.py
 ```
 
 설치기는 `~/.local/bin/gon-workflow`, Codex와 Claude의 스킬 링크를 만든다.
-기존 전역 지침은 로컬 백업 후 **새 프로젝트 시작 게이트만** 덧붙인다.
+기존 전역 지침은 로컬 백업 후 **GitHub 기준 작업·세션 운영 블록만** 덧붙인다.
 Codex는 `CODEX_HOME`을 존중한다. `~/.local/bin`을 PATH에 포함하고 새 세션에서 스킬을 확인한다.
 Orca·원격 호스트·별도 CODEX_HOME은 해당 환경에서 별도 설치해야 한다.
 
@@ -89,6 +89,26 @@ python3 scripts/workflow.py validate --reviewed
 원본 SHA·문서 해시 변경은 **검토 대상 감지**다. 실제 호환성 판단은 영향 검토와 관련 검사로 남긴다.
 검토·merge 후 중앙 checkout을 main으로 돌린다. 전역 지침 갱신은 `python3 scripts/install.py`로 다시 적용한다. 다음 `start`가 새 표준을 적용한다.
 기존 프로젝트의 상태 요약·조사 기록은 보존하며, 수정된 관리 파일은 자동 덮어쓰지 않는다.
+
+## GitHub 기록과 세션 시작
+
+모든 계획된 설계·구현은 GitHub 이슈에 범위·완료 조건을 먼저 기록하고, 설계·작업 파일을 커밋·푸시해 원격 링크로 연결한다. 대화나 로컬 파일만을 작업 기준으로 삼지 않는다.
+새 세션은 `gon-workflow resume <경로> --issue URL --task docs/tasks/N-task.md`로 원격 기록을 확인한다. 별도 설계는 `--plan`, 관련 PR은 `--pr`로 모두 지정한다. 같은 세션에서 계속할 때도 이슈·문서·검증 기록을 갱신한다.
+필요한 추가 개선은 현재 목표와의 관계·완료 조건을 먼저 기록하고 범위 안에서 구현한다. 독립 기능은 후속 이슈로 분리한다. 이슈 등록은 거래·배포·삭제 등 별도 실행 승인을 뜻하지 않는다.
+
+단순 질의에는 이슈를 만들지 않는다. 작은 변경은 기존 이슈의 체크리스트와 짧은 작업 기록을 재사용한다. 설계 PR은 후속 구현 이슈를 자동 종료하지 않는다.
+
+```bash
+gon-workflow resume . --issue https://github.com/OWNER/REPO/issues/N \
+  --task docs/tasks/N-task.md --plan docs/plans/feature.md \
+  --pr https://github.com/OWNER/REPO/pull/P
+```
+
+`--plan`·`--pr`은 반복 가능하다. 별도 설계가 없으면 작업 파일에 계획을 기록한다. 이슈와 작업 파일의 정확한 이슈 URL, STATE·작업·지정 설계의 로컬/커밋/원격 일치, native 선행 관계, 지정 PR/CI를 확인한다. 새 세션을 실제 생성하지 않는다. JSON의 미지정·빈 CI·실패를 성공으로 해석하지 않는다.
+
+명령 성공은 기록 확인이다. 선행 이슈의 not_planned 종료·열린 상태, PR 미통합·head 불일치, CI 실패/대기, 사용자 승인·소유권을 판단한 뒤 해당 범위의 다음 행동을 정한다. CI 실패 수정은 같은 이슈로 진행할 수 있다. 문서의 충분성이나 지정하지 않은 PR까지 검사하지 않는다.
+
+미커밋·미푸시·원격 불일치·조회 실패이면 자동 stash/삭제/재초기화하지 않는다. 소유권을 확인하고 변경을 보존한 뒤 기록을 갱신한다. clean 체크아웃에서 확인하는 경우 작업 중인 다른 worktree의 미커밋 변경은 별도로 보고한다. 검증 시각 이후의 변경도 착수 전에 확인한다.
 
 ## 인수인계
 
