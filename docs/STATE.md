@@ -1,5 +1,7 @@
 # 작업 인수인계
 
+- [#30](https://github.com/krdn/gon-github-workflow/issues/30) 전역 설치 지침의 적용 범위를 명시했다. 임시 홈에서 Codex·Claude 지침 보존과 재설치 결과 동일성을 확인했고, 단위 테스트 90건과 lock 검증을 통과했다.
+
 - 현재 작업: [#27 GitHub 기준 세션 운영](tasks/27-github-session-resume.md), feat/github-session-resume.
 - 필수 읽기: 작업 파일·조사·설계, #27과 연결 PR/CI.
 - 다음 행동: [#27](https://github.com/krdn/gon-github-workflow/issues/27)·[PR28](https://github.com/krdn/gon-github-workflow/pull/28)의 최신 통합·설치 결과를 확인한다. 미완료 단계만 이어가고 완료라면 후속 요청을 기다린다.
