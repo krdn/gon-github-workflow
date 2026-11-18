@@ -1,20 +1,16 @@
 {
-  "checked_at": "2026-11-16T16:05:53.680140+00:00",
-  "objective": "GitHub 선기록과 읽기 전용 세션 재개 검증",
+  "checked_at": "2026-11-18T23:48:16.509499+00:00",
+  "objective": "전역 설치 지침에서 신규 프로젝트 구성과 채택 이후의 GitHub 운영 규칙 범위를 구분한다 (#30).",
   "sources": [
     {
-      "url": "https://docs.github.com/en/rest/repos/contents#get-repository-content",
-      "finding": "ref로 커밋별 파일과 SHA를 조회할 수 있다."
+      "url": "https://learn.chatgpt.com/docs/agent-configuration/agents-md",
+      "finding": "Codex는 설정 홈의 전역 AGENTS 지침과 현재 프로젝트의 지침을 함께 읽는다."
     },
     {
-      "url": "https://cli.github.com/manual/gh_pr_view",
-      "finding": "headRefOid와 statusCheckRollup을 JSON으로 조회한다. 설치본에서 실제 PR 조회 확인."
-    },
-    {
-      "url": "https://docs.github.com/en/rest/issues/issue-dependencies",
-      "finding": "blocked_by는 페이지 단위 REST API다. 최신 CLI 필드는 설치본에서 지원하지 않지만 REST는 조회 성공."
+      "url": "https://code.claude.com/docs/en/memory",
+      "finding": "사용자 수준 CLAUDE.md는 프로젝트를 가리지 않고 적용된다."
     }
   ],
-  "decisions": "기존 handoff 검증을 재사용하고 stdlib/gh만 사용한다. 전체 선행 관계와 명시한 PR을 읽되 승인이나 실제 세션 실행으로 해석하지 않는다.",
+  "decisions": "신규 프로젝트 구성 문구는 유지하고, 이후 단락이 적용되는 범위를 설치기에서 한 번 명시한다.",
   "status": "reviewed"
 }
